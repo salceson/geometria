@@ -23,6 +23,9 @@ double orient2dExactWrapper(POINT point1, POINT point2, POINT point3);
 
 double orient2dSlowWrapper(POINT point1, POINT point2, POINT point3);
 
-double myOrient2d(POINT point1, POINT point2, POINT point3);
+double myOrient2d3(POINT point1, POINT point2, POINT point3);
+
+double myOrient2d2(POINT point1, POINT point2, POINT point3);
+
 
 #endif //UTILS_H

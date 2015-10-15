@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 
 extern "C" {
 #include "predicates.h"
@@ -42,7 +43,7 @@ int main(int argc, char **argv) {
         vector<pair<REAL, REAL>> points = generatePointsInSquare(n, start, end);
 
         for (auto point : points) {
-            filestream << point.first << " " << point.second << endl;
+            filestream << setprecision(20) << point.first << " " << point.second << endl;
         }
 
         filestream.close();
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
         vector<pair<REAL, REAL>> points = generatePointsOnCircle(n, radius, center);
 
         for (auto point : points) {
-            filestream << point.first << " " << point.second << endl;
+            filestream << setprecision(20) << point.first << " " << point.second << endl;
         }
 
         filestream.close();
@@ -86,7 +87,7 @@ int main(int argc, char **argv) {
         vector<pair<REAL, REAL>> points = generatePointsOnLine(n, start, end, point1, point2);
 
         for (auto point : points) {
-            filestream << point.first << " " << point.second << endl;
+            filestream << setprecision(20) << point.first << " " << point.second << endl;
         }
 
         filestream.close();
@@ -94,8 +95,10 @@ int main(int argc, char **argv) {
 
     else if (strcmp(argv[1], "orient") == 0) {
         OrientationFunction function = 0;
-        if (strcmp(argv[2], "myorient2d") == 0) {
-            function = myOrient2d;
+        if (strcmp(argv[2], "myorient2d2") == 0) {
+            function = myOrient2d2;
+        } else if (strcmp(argv[2], "myorient2d3") == 0) {
+            function = myOrient2d3;
         } else if (strcmp(argv[2], "orient2dfast") == 0) {
             function = orient2dFastWrapper;
         } else if (strcmp(argv[2], "orient2dslow") == 0) {
@@ -125,7 +128,7 @@ int main(int argc, char **argv) {
 
         for (int i = 0; i < n; ++i) {
             fileIn >> x >> y;
-            fileOut << x << " " << y << " " << function(point1, point2, make_pair(x, y)) << endl;
+            fileOut << setprecision(20) << x << " " << y << " " << function(point1, point2, make_pair(x, y)) << endl;
         }
 
         fileIn.close();

@@ -28,7 +28,16 @@ double orient2dSlowWrapper(POINT point1, POINT point2, POINT point3) {
     return orient2dslow(point1Array, point2Array, point3Array);
 }
 
-double myOrient2d(POINT point1, POINT point2, POINT point3) {
+double myOrient2d3(POINT point1, POINT point2, POINT point3) {
+    return point1.first * point2.second
+           + point1.second * point3.first
+           + point2.first * point3.second
+           - point2.second * point3.first
+           - point1.second * point2.first
+           - point1.first * point3.second;
+}
+
+double myOrient2d2(POINT point1, POINT point2, POINT point3) {
     return (point1.first - point3.first) * (point2.second - point3.second)
            - (point2.first - point3.first) * (point1.second - point3.second);
 }
