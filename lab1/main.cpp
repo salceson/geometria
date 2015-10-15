@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 
     else if (strcmp(argv[1], "orient") == 0) {
         OrientationFunction function = 0;
-        if (strcmp(argv[2], "myOrient2d") == 0) {
+        if (strcmp(argv[2], "myorient2d") == 0) {
             function = myOrient2d;
         } else if (strcmp(argv[2], "orient2dfast") == 0) {
             function = orient2dFastWrapper;
