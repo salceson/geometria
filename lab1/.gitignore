@@ -183,4 +183,5 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 
-
+lab1
+*.out

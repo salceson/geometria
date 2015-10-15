@@ -11,6 +11,18 @@ extern "C" {
 
 using namespace std;
 
-REAL *pairToRealArray(std::pair<REAL, REAL> point);
+typedef pair<REAL, REAL> POINT;
+
+typedef double (*OrientationFunction)(POINT, POINT, POINT);
+
+void pairToRealArray(POINT point, REAL *pointArray);
+
+double orient2dFastWrapper(POINT point1, POINT point2, POINT point3);
+
+double orient2dExactWrapper(POINT point1, POINT point2, POINT point3);
+
+double orient2dSlowWrapper(POINT point1, POINT point2, POINT point3);
+
+double myOrient2d(POINT point1, POINT point2, POINT point3);
 
 #endif //UTILS_H
