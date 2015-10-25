@@ -10,11 +10,11 @@ filename = sys.argv[1]
 n = sys.argv[2]
 
 to_call = [
-    ['a1', 'myorient2d2'],
-    ['a2', 'myorient2d3'],
-    ['b', 'orient2dfast'],
-    ['c', 'orient2dexact'],
-    ['d', 'orient2dslow']
+    ['a', 'myorient2d2'],
+    ['b', 'myorient2d3'],
+    ['c', 'orient2dfast'],
+    ['d', 'orient2dexact'],
+    ['e', 'orient2dslow']
 ]
 
 os.system('python visualize.py ' + filename + ' 0 0')

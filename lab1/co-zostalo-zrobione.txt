@@ -1,0 +1,20 @@
+Michał Ciołczyk
+
+Laboratorium 1 – sprawozdanie
+
+W ramach laboratorium zostały wykonane następujące czynności:
+ 1. Wygenerowanie zbiorów danych:
+(a) 10^5 losowych punktów o współrzędnych z przedziału [-100, 100] (plik a.in).
+(b) 10^5 losowych punktów o współrzędnych z przedziału [-10^14, 10^14] (plik b.in).
+(c) 1000 losowych punktów leżących na okręgu O((0,0), 100) [- (plik c.in).
+(d) 1000 losowych punktów leżących na prostej wyznaczonej przez wektor (a, b), gdzie a=(-1.0, 0.0),
+    b=(1.0, 0.1) (plik d.in).
+ 2. Wizualizacja w/w zbiorów danych (pliki a.png, b.png, c.png, d.png).
+ 3. Implementacja metod obliczania wyznacznika:
+(a) wg wzoru (1) (wyznacznik 2x2)
+(b) wg wzoru (2) (wyznacznik 3x3)
+(c) orient2dfast
+(d) orient2dexact
+(e) orient2dslow
+ 4. Wizualizacja w/w metod obliczania wyznacznika
+ (pliki x_y.png, gdzie x – zbiór danych, y – metoda liczenia wyznacznika).
