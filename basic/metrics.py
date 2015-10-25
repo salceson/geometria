@@ -1,18 +1,20 @@
 # coding=utf-8
 
-from sklearn.neighbors import DistanceMetric
+import numpy as np
 
 __author__ = 'Michał Ciołczyk'
 
-euclidean_metric = DistanceMetric.get_metric('euclidean')
-
 
 def euclidean(p1, p2):
-    return euclidean_metric.pairwise([[p1.x, p1.y]], [[p2.x, p2.y]])[0][0]
+    return np.sqrt(euclidean_sqr(p1, p2))
+
+
+def euclidean_sqr(p1, p2):
+    return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2
 
 
 def euclidean_vec(vec):
-    return euclidean_metric.pairwise([[0, 0]], [[vec[0], vec[1]]])[0][0]
+    return np.sqrt(vec[0] ** 2 + vec[1] ** 2)
 
 
 def euclidean_vecs(vec1, vec2):

@@ -1,7 +1,7 @@
 # coding=utf-8
 from copy import deepcopy
 
-from basic.convex_hull import graham_convex_hull
+from basic.convex_hull import *
 from generate import *
 from gui.plots import *
 from gui.primitives import Line
@@ -19,7 +19,8 @@ plot.step()
 points_copy = deepcopy(points)
 for point in points_copy:
     point.color = 'r'
-hull = graham_convex_hull(points_copy)
+# hull = graham_convex_hull(points_copy)
+hull = jarvis_convex_hull(points_copy)
 prev_point = hull[-1]
 for point in hull:
     plot.add(Line.from_points(prev_point, point, 'g'))

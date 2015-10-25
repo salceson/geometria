@@ -1,20 +1,13 @@
 # coding=utf-8
 from basic.constants import epsilon
 from gui.primitives import Point
-from metrics import euclidean
+from metrics import euclidean_sqr
 
 from orient import orient
 
 __author__ = 'Michał Ciołczyk'
 
 COUNTER_CLOCKWISE, CLOCKWISE, COLINEAR = (1, -1, 0)
-
-
-def _keep_left(hull, r, visualization=None):
-    while len(hull) > 1 and orient(hull[-2], hull[-1], r) != COUNTER_CLOCKWISE:
-        hull.pop()
-    hull.append(r)
-    return hull
 
 
 def graham_convex_hull(points, visualization=None):
@@ -32,7 +25,7 @@ def graham_convex_hull(points, visualization=None):
     def comparator(p1, p2):
         orientation = orient(lowest_Y, p1, p2)
         if orientation == COLINEAR:
-            dist = euclidean(lowest_Y, p1) - euclidean(lowest_Y, p2)
+            dist = euclidean_sqr(lowest_Y, p1) - euclidean_sqr(lowest_Y, p2)
             if abs(dist) <= epsilon:
                 return 0
             elif dist > epsilon:
@@ -42,9 +35,29 @@ def graham_convex_hull(points, visualization=None):
         else:
             return -orientation
 
+    def keep_left(hull, r):
+        while len(hull) > 1 and orient(hull[-2], hull[-1], r) != COUNTER_CLOCKWISE:
+            hull.pop()
+        hull.append(r)
+        return hull
+
     points = sorted(points, cmp=comparator)
-    return reduce(lambda hull, r: _keep_left(hull, r, visualization), points, [])
+    return reduce(keep_left, points, [])
 
 
 def jarvis_convex_hull(points, visualization=None):
-    pass
+    def next_point(p):
+        q = p
+        for r in points:
+            orientation = orient(p, q, r)
+            if orientation == COUNTER_CLOCKWISE or \
+                    (orientation == COLINEAR and euclidean_sqr(p, r) > euclidean_sqr(p, q)):
+                q = r
+        return q
+
+    hull = [min(points, key=lambda x: x.x)]
+    for p in hull:
+        q = next_point(p)
+        if q != hull[0]:
+            hull.append(q)
+    return hull
