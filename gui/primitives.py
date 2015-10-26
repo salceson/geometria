@@ -64,11 +64,17 @@ class Line(object):
                 ax.text(x_middle, y_middle, self.label, horizontalalignment='center', verticalalignment='center',
                         fontsize=10)
 
-    def max(self):
+    def max_y(self):
         return max(self.y1, self.y2)
 
-    def min(self):
+    def min_y(self):
         return min(self.y1, self.y2)
+
+    def max_x(self):
+        return max(self.x1, self.x2)
+
+    def min_x(self):
+        return min(self.x1, self.x2)
 
 
 # noinspection PyTypeChecker
@@ -93,11 +99,17 @@ class Point(object):
                 ax.text(self.x, self.y - dy, self.label, horizontalalignment='center', verticalalignment='center',
                         fontsize=10)
 
-    def max(self):
+    def max_y(self):
         return self.y
 
-    def min(self):
+    def min_y(self):
         return self.y
+
+    def max_x(self):
+        return self.x
+
+    def min_x(self):
+        return self.x
 
     def __str__(self):
         return "Point(%f, %f, color=%s)" % (self.x, self.y, self.color)

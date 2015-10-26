@@ -1,5 +1,4 @@
 # coding=utf-8
-from copy import deepcopy
 from basic.constants import epsilon
 from gui.primitives import Point
 from metrics import euclidean_sqr
@@ -47,15 +46,11 @@ def graham_convex_hull(points, visualization=None):
 
 
 def jarvis_convex_hull(points, visualization=None):
-    points2 = deepcopy(points)
-
     def min_comp(p, q):
         if (p.x < q.x) or (p.x == q.x and p.y < q.y):
             return p
         else:
             return q
-
-    hull = [reduce(min_comp, points2)]
 
     def next_point(p):
         def comparator(q, r):
@@ -71,9 +66,10 @@ def jarvis_convex_hull(points, visualization=None):
                 else:
                     return r
 
-        return reduce(comparator, points2)
+        return reduce(comparator, points)
 
-    p = hull[-1]
+    hull = [reduce(min_comp, points)]
+    p = hull[0]
     while True:
         q = next_point(p)
         hull.append(q)
