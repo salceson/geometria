@@ -120,3 +120,5 @@ crashlytics-build.properties
 # Visualizations
 *.mp4
 *.gif
+*.png
+*.jpg
