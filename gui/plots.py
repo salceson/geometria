@@ -99,7 +99,13 @@ class Plot(object):
                     [f.set_visible(True) for f in drawings[i]]
                 return always_visible + all_drawings
 
-            return animation.FuncAnimation(self.fig, step, len(self.steps) + 1, init, blit=True, interval=500)
+            dx = self.x_max - self.x_min
+            dy = self.y_max - self.y_min
+            dx *= 0.1
+            dy *= 0.1
+            plt.axis([self.x_min - dx, self.x_max + dx, self.y_min - dy, self.y_max + dy])
+
+            return animation.FuncAnimation(self.fig, step, len(self.steps) + 1, init, blit=True, interval=100)
 
     def show(self):
         """Shows the plot (so no pyplot imports are needed)."""

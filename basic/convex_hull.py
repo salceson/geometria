@@ -74,8 +74,27 @@ def jarvis_convex_hull(points, visualization=False):
         else:
             return q
 
+    hull = [reduce(min_comp, points)]
+
+    def get_vis_step(r):
+        first = True
+        step = []
+        for p in hull:
+            if not first:
+                step.append(Line.from_points(step[-1], p, 'g'))
+            cpy = copy(p)
+            step.append(cpy)
+            first = False
+        if len(step) > 0:
+            step.append(Line.from_points(step[-1], r, 'y'))
+        cpy = copy(r)
+        step.append(cpy)
+        return step
+
     def next_point(p):
         def comparator(q, r):
+            if visualization:
+                steps.append(get_vis_step(r))
             o = orient(p, q, r)
             if o == COLINEAR:
                 if euclidean_sqr(p, q) > euclidean_sqr(p, r):
@@ -88,9 +107,11 @@ def jarvis_convex_hull(points, visualization=False):
                 else:
                     return r
 
+        if visualization:
+            steps.append(get_vis_step(points[-1]))
+
         return reduce(comparator, points)
 
-    hull = [reduce(min_comp, points)]
     p = hull[0]
     steps = []
     while True:

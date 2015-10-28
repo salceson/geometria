@@ -19,8 +19,8 @@ if __name__ == '__main__':
     points_copy = deepcopy(points)
     for point in points_copy:
         point.color = 'r'
-    hull, steps = graham_convex_hull(points_copy, True)
-    # hull, steps = jarvis_convex_hull(points_copy)
+    # hull, steps = graham_convex_hull(points_copy, True)
+    hull, steps = jarvis_convex_hull(points_copy, True)
     for step in steps:
         plot.step()
         plot.add_all(step)
@@ -33,5 +33,6 @@ if __name__ == '__main__':
         plot.add_all(hull)
         plot.step()
     anim = plot.draw()
-    # anim.save('visualization.mp4')
+    # anim.save('visualization.mp4', extra_args=['-vcodec', 'libx264'])
+    # anim.save('visualization.gif', writer='imagemagick')
     plot.show()
