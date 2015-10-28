@@ -17,6 +17,8 @@ if __name__ == '__main__':
     set = sys.argv[1]
     method = sys.argv[2]
 
+    show = len(sys.argv) > 3
+
     points = []
 
     if set == 'a':
@@ -62,7 +64,8 @@ if __name__ == '__main__':
 
         print (time_end - time_start), 's'
 
-        hull, steps = jarvis_convex_hull(points_copy, True)
+        if set != 'b':
+            hull, steps = jarvis_convex_hull(points_copy, True)
 
     for step in steps:
         plot.step()
@@ -76,5 +79,9 @@ if __name__ == '__main__':
         plot.add_all(hull)
         plot.step()
     anim = plot.draw()
-    anim.save('visualization_' + set + '_' + method + '.mp4', extra_args=['-vcodec', 'libx264'])
-    # anim.save('visualization.gif', writer='imagemagick')
+
+    if show:
+        plot.show()
+    elif not (method == 'j' and set == 'b'):
+        anim.save('visualization_' + set + '_' + method + '.mp4', extra_args=['-vcodec', 'libx264'])
+        # anim.save('visualization.gif', writer='imagemagick')
