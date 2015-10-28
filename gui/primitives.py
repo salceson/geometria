@@ -51,10 +51,11 @@ class Line(object):
             figures = [plt.Line2D([self.x1, self.x2], [self.y1, self.y2], color=self.color)]
             x_middle = (self.x1 + self.x2) / 2.0
             y_middle = (self.y1 + self.y2) / 2.0 - dy
-            figures.append(plt.Text(x_middle, y_middle, self.label,
-                                    horizontalalignment='center',
-                                    verticalalignment='center',
-                                    fontsize=10))
+            if self.label:
+                figures.append(plt.Text(x_middle, y_middle, self.label,
+                                        horizontalalignment='center',
+                                        verticalalignment='center',
+                                        fontsize=10))
             return figures
         else:
             ax.plot([self.x1, self.x2], [self.y1, self.y2], c=self.color)

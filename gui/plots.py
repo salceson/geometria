@@ -9,11 +9,13 @@ __author__ = 'Michał Ciołczyk'
 
 
 class Plot(object):
-    def __init__(self, fig=plt.gcf(), ax=plt.gca()):
+    def __init__(self, every_frame_figures=[], fig=plt.gcf(), ax=plt.gca()):
         """Creates a new simple plot.
 
         :param fig: pyplot's figure
         :param ax: pyplot's axes
+        :param every_frame_figures: figures to appear on every frame (on animated plot) or
+         just added first
         """
         self.animated = False
         self.fig = fig
@@ -24,6 +26,7 @@ class Plot(object):
         self.y_max = float('-inf')
         self.x_min = float('inf')
         self.x_max = float('-inf')
+        self.every_frame_figures = every_frame_figures
 
     def add_all(self, figures):
         """Adds all figures into a step (if animated) or into the things to draw.
@@ -68,19 +71,24 @@ class Plot(object):
         :return: animation if animated
         """
         if not self.animated:
+            for f in self.every_frame_figures:
+                f.draw(self.ax, (self.y_max - self.y_min) / 20.0)
             for f in self.to_draw:
                 f.draw(self.ax, (self.y_max - self.y_min) / 20.0)
         else:
             def op(lf):
-                return list(itertools.chain(*map(lambda f: f.draw(self.ax, (self.y_max - self.y_min) / 20.0, True), lf)))
+                return list(
+                    itertools.chain(*map(lambda f: f.draw(self.ax, (self.y_max - self.y_min) / 20.0, True), lf)))
 
             drawings = map(op, self.steps)
             all_drawings = list(itertools.chain(*drawings))
+            always_visible = op(self.every_frame_figures)
 
             def init():
                 [f.set_visible(False) for f in all_drawings]
+                [self.ax.add_artist(f) for f in always_visible]
                 [self.ax.add_artist(f) for f in all_drawings]
-                return all_drawings
+                return always_visible + all_drawings
 
             def step(i):
                 if i == len(self.steps):
@@ -89,9 +97,9 @@ class Plot(object):
                     if i > 0:
                         [f.set_visible(False) for f in drawings[i - 1]]
                     [f.set_visible(True) for f in drawings[i]]
-                return all_drawings
+                return always_visible + all_drawings
 
-            return animation.FuncAnimation(self.fig, step, len(self.steps) + 1, init, blit=True, interval=1000)
+            return animation.FuncAnimation(self.fig, step, len(self.steps) + 1, init, blit=True, interval=500)
 
     def show(self):
         """Shows the plot (so no pyplot imports are needed)."""
@@ -104,11 +112,11 @@ class Plot(object):
 
 
 class AnimatedPlot(Plot):
-    def __init__(self, fig=plt.gcf(), ax=plt.gca()):
+    def __init__(self, every_frame_figures=[], fig=plt.gcf(), ax=plt.gca()):
         """Creates a new animated plot
 
         :param fig: pyplot's figure
         :param ax: pyplot's axes
         """
-        super(AnimatedPlot, self).__init__(fig, ax)
+        super(AnimatedPlot, self).__init__(every_frame_figures, fig, ax)
         self.animated = True

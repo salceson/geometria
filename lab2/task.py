@@ -1,32 +1,36 @@
 # coding=utf-8
 from copy import deepcopy
 
-from basic.convex_hull import *
-from generate import *
-from gui.plots import *
+from basic.convex_hull import jarvis_convex_hull, graham_convex_hull
+from generate import generate_a, generate_b, generate_c, generate_d
+from gui.plots import AnimatedPlot
 from gui.primitives import Line
 
 __author__ = 'Michał Ciołczyk'
 
 # points = generate_a(100, -100, 100)
 # points = generate_b(100, 0, 0, 10)
-points = generate_c(100, -10, 10, -10, -10, 10, -10, 10, 10)
+# points = generate_c(100, -10, 10, -10, -10, 10, -10, 10, 10)
+points = generate_d(25, 20, 10, 0, 10, 10, 0, 10)
 
 
-plot = Plot()
-plot.add_all(points)
-plot.step()
+plot = AnimatedPlot(points)
 points_copy = deepcopy(points)
 for point in points_copy:
     point.color = 'r'
-# hull = graham_convex_hull(points_copy)
-hull = jarvis_convex_hull(points_copy)
+hull, steps = graham_convex_hull(points_copy, True)
+# hull, steps = jarvis_convex_hull(points_copy)
+print steps
+for step in steps:
+    plot.step()
+    plot.add_all(step)
+plot.step()
 prev_point = hull[-1]
 for point in hull:
     plot.add(Line.from_points(prev_point, point, 'g'))
     prev_point = point
 plot.add_all(hull)
 plot.step()
-plot.draw()
+anim = plot.draw()
+print plot.steps
 plot.show()
-

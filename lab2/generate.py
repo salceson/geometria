@@ -46,5 +46,23 @@ def generate_c(n, x1, y1, x2, y2, x3, y3, x4, y4):
     return points
 
 
-def generate_d(n1, n2, x1, y1, x2, y2, x3, y3, x4, y4):
-    pass
+def generate_d(n1, n2, x2, y2, x3, y3, x4, y4):
+    (x1, y1) = (0, 0)
+    vec_ax1 = (x2 - x1, y2 - y1)
+    vec_ax2 = (x4 - x1, y4 - y1)
+    vec_diag1 = (x3 - x1, y3 - y1)
+    vec_diag2 = (x4 - x2, y4 - y2)
+    points = []
+    ts1 = np.random.uniform(0.0, 1.0, 2 * n1)
+    ts2 = np.random.uniform(0.0, 1.0, 2 * n2)
+    for i in xrange(0, 2 * n1, 2):
+        t = ts1[i]
+        points.append(Point(x1 + t * vec_ax1[0], y1 + t * vec_ax1[1], 'b'))
+        t = ts1[i + 1]
+        points.append(Point(x1 + t * vec_ax2[0], y1 + t * vec_ax2[1], 'b'))
+    for i in xrange(0, 2 * n2, 2):
+        t = ts2[i]
+        points.append(Point(x1 + t * vec_diag1[0], y1 + t * vec_diag1[1], 'b'))
+        t = ts2[i + 1]
+        points.append(Point(x2 + t * vec_diag2[0], y2 + t * vec_diag2[1], 'b'))
+    return points

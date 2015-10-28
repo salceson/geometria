@@ -1,6 +1,7 @@
 # coding=utf-8
+from copy import copy, deepcopy
 from basic.constants import epsilon
-from gui.primitives import Point
+from gui.primitives import Point, Line
 from metrics import euclidean_sqr
 
 from orient import orient
@@ -10,7 +11,7 @@ __author__ = 'Michał Ciołczyk'
 COUNTER_CLOCKWISE, CLOCKWISE, COLINEAR = (1, -1, 0)
 
 
-def graham_convex_hull(points, visualization=None):
+def graham_convex_hull(points, visualization=False):
     """Returns points on convex hull of an array of points in CCW order."""
     # Find the point with lowest y coordinate (and lowest x coordinate
     # if there are more than one point with lowest y coordinate)
@@ -35,17 +36,38 @@ def graham_convex_hull(points, visualization=None):
         else:
             return -orientation
 
+    def get_vis_step(hull, r):
+        first = True
+        step = []
+        for p in hull:
+            if not first:
+                step.append(Line.from_points(step[-1], p, 'g'))
+            cpy = copy(p)
+            step.append(cpy)
+            first = False
+        if len(step) > 0:
+            step.append(Line.from_points(step[-1], r, 'y'))
+        cpy = copy(r)
+        step.append(cpy)
+        return step
+
+    steps = []
+
     def keep_left(hull, r):
+        if visualization:
+            steps.append(get_vis_step(hull, r))
         while len(hull) > 1 and orient(hull[-2], hull[-1], r) != COUNTER_CLOCKWISE:
             hull.pop()
+            if visualization:
+                steps.append(get_vis_step(hull, r))
         hull.append(r)
         return hull
 
     points = sorted(points, cmp=comparator)
-    return reduce(keep_left, points, [])
+    return reduce(keep_left, points, []), steps
 
 
-def jarvis_convex_hull(points, visualization=None):
+def jarvis_convex_hull(points, visualization=False):
     def min_comp(p, q):
         if (p.x < q.x) or (p.x == q.x and p.y < q.y):
             return p
@@ -70,10 +92,11 @@ def jarvis_convex_hull(points, visualization=None):
 
     hull = [reduce(min_comp, points)]
     p = hull[0]
+    steps = []
     while True:
         q = next_point(p)
         hull.append(q)
         p = hull[-1]
         if p == hull[0]:
             break
-    return hull
+    return hull, steps
