@@ -33,7 +33,6 @@ if __name__ == '__main__':
     vis = Plot(points)
     vis.draw()
     plt.savefig(set + '_' + method + '.png')
-    plt.figure()
 
     plot = AnimatedPlot(points)
     points_copy = deepcopy(points)
@@ -64,8 +63,7 @@ if __name__ == '__main__':
 
         print (time_end - time_start), 's'
 
-        if set != 'b':
-            hull, steps = jarvis_convex_hull(points_copy, True)
+        hull, steps = jarvis_convex_hull(points_copy, True)
 
     for step in steps:
         plot.step()
@@ -82,6 +80,6 @@ if __name__ == '__main__':
 
     if show:
         plot.show()
-    elif not (method == 'j' and set == 'b'):
+    else:
         anim.save('visualization_' + set + '_' + method + '.mp4', extra_args=['-vcodec', 'libx264'])
         # anim.save('visualization.gif', writer='imagemagick')

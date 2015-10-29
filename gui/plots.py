@@ -3,6 +3,7 @@
 import itertools
 
 from matplotlib import pyplot as plt
+import matplotlib
 import matplotlib.animation as animation
 
 __author__ = 'Michał Ciołczyk'
@@ -17,6 +18,7 @@ class Plot(object):
         :param every_frame_figures: figures to appear on every frame (on animated plot) or
          just added first
         """
+        self.previous_drawings = []
         self.animated = False
         self.fig = fig
         self.ax = ax
@@ -95,28 +97,31 @@ class Plot(object):
             for f in self.to_draw:
                 f.draw(self.ax, (self.y_max - self.y_min) / 20.0)
         else:
-            def op(lf):
+            def get_drawings_from_figures(lf):
                 return list(
                     itertools.chain(*map(lambda f: f.draw(self.ax, (self.y_max - self.y_min) / 20.0, True), lf)))
 
-            drawings = map(op, self.steps)
-            all_drawings = list(itertools.chain(*drawings))
-            always_visible = op(self.every_frame_figures)
+            # drawings = map(op, self.steps)
+            always_visible = get_drawings_from_figures(self.every_frame_figures)
 
             def init():
-                [f.set_visible(False) for f in all_drawings]
                 [self.ax.add_artist(f) for f in always_visible]
-                [self.ax.add_artist(f) for f in all_drawings]
-                return always_visible + all_drawings
+                return always_visible
 
             def step(i):
+                to_return = []
                 if i == len(self.steps):
-                    [f.set_visible(False) for f in all_drawings]
+                    [f.remove() for f in self.previous_drawings]
+                    # to_return += self.previous_drawings
                 else:
                     if i > 0:
-                        [f.set_visible(False) for f in drawings[i - 1]]
-                    [f.set_visible(True) for f in drawings[i]]
-                return always_visible + all_drawings
+                        [f.remove() for f in self.previous_drawings]
+                        # to_return += self.previous_drawings
+                    drawings = get_drawings_from_figures(self.steps[i])
+                    [self.ax.add_artist(f) for f in drawings]
+                    to_return += drawings
+                    self.previous_drawings = drawings
+                return to_return
 
             return animation.FuncAnimation(self.fig, step, len(self.steps) + 1, init, blit=True, interval=100)
 
