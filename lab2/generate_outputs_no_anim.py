@@ -67,7 +67,7 @@ if __name__ == '__main__':
     for point in hull:
         plot.add(Line.from_points(prev_point, point, 'g'))
         prev_point = point
-    # plot.add_all(hull)
-    # plot.draw()
-    # plt.savefig('noanim_hull_' + set + '_' + method + '.png')
+    plot.add_all(hull)
+    plot.draw()
+    plt.savefig('noanim_hull_' + set + '_' + method + '.png')
     # plot.show()
