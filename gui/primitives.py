@@ -1,6 +1,11 @@
 # coding=utf-8
 import matplotlib.pyplot as plt
 
+try:
+    from basic.constants import epsilon
+except ImportError:
+    epsilon = 1e-13
+
 __author__ = 'Michał Ciołczyk'
 
 
@@ -28,6 +33,8 @@ class Line(object):
         self.y2 = y2
         self.color = color
         self.label = label
+        self.point1 = Point(x1, y1, color)
+        self.point2 = Point(x2, y2, color)
 
     @classmethod
     def from_points(cls, p1, p2, color, label=None):
@@ -77,6 +84,20 @@ class Line(object):
     def min_x(self):
         return min(self.x1, self.x2)
 
+    def __hash__(self):
+        return hash(self.point1) + 31 * hash(self.point2)
+
+    def __eq__(self, other):
+        return self.point1 == other.point1 and self.point2 == other.point2
+
+    def to_csv_line(self):
+        x1 = "%.20f" % self.x1
+        x2 = "%.20f" % self.x2
+        y1 = "%.20f" % self.y1
+        y2 = "%.20f" % self.y2
+        label = ", %s" % self.label if self.label else ''
+        return "Line, %s, %s, %s, %s, %s%s" % (x1, y1, x2, y2, self.color, label)
+
 
 # noinspection PyTypeChecker
 class Point(object):
@@ -119,7 +140,31 @@ class Point(object):
         return self.__str__()
 
     def __eq__(self, other):
-        return self.x == other.x and self.y == other.y
+        return abs(self.x - other.x) <= epsilon and abs(self.y - other.y) <= epsilon
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.x) + 31 * hash(self.y)
+
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y, self.color, self.label)
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y, self.color, self.label)
+
+    def __mul__(self, other):
+        if isinstance(other, (int, float)):
+            return Point(other * self.x, other * self.y, self.color, self.label)
+        else:
+            raise NotImplementedError("Unsupported type of operand %s" % type(other))
+
+    def __rmul__(self, other):
+        return self * other
+
+    def to_csv_line(self):
+        x = "%.20f" % self.x
+        y = "%.20f" % self.y
+        label = ", %s" % self.label if self.label else ''
+        return "Point, %s, %s, %s%s" % (x, y, self.color, label)

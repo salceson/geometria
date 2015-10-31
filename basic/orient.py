@@ -1,5 +1,5 @@
 # coding=utf-8
-from basic.constants import epsilon
+from .constants import epsilon
 
 __author__ = 'Michał Ciołczyk'
 

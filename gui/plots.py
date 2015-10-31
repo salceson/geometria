@@ -3,7 +3,6 @@
 import itertools
 
 from matplotlib import pyplot as plt
-import matplotlib
 import matplotlib.animation as animation
 
 __author__ = 'Michał Ciołczyk'

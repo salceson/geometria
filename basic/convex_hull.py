@@ -1,10 +1,11 @@
 # coding=utf-8
-from copy import copy, deepcopy
-from basic.constants import epsilon
-from gui.primitives import Point, Line
-from metrics import euclidean_sqr
+from copy import copy
 
-from orient import orient
+from .comparators import compare_lower_x_first_then_lower_y
+from .constants import epsilon
+from .metrics import euclidean_sqr
+from .orient import orient
+from gui.primitives import Point, Line
 
 __author__ = 'Michał Ciołczyk'
 
@@ -15,7 +16,7 @@ def graham_convex_hull(points, visualization=False):
     """Returns points on convex hull of an array of points in CCW order."""
     # Find the point with lowest y coordinate (and lowest x coordinate
     # if there are more than one point with lowest y coordinate)
-    lowest_Y = Point(float("inf"), float("inf"), 'b')
+    lowest_Y = Point(float("inf"), float("inf"), 'k')
     for point in points:
         if point.y < lowest_Y.y - epsilon:
             lowest_Y = point
@@ -69,7 +70,7 @@ def graham_convex_hull(points, visualization=False):
 
 def jarvis_convex_hull(points, visualization=False):
     def min_comp(p, q):
-        if (p.x < q.x) or (p.x == q.x and p.y < q.y):
+        if compare_lower_x_first_then_lower_y(p, q):
             return p
         else:
             return q
