@@ -4,7 +4,7 @@ import os
 
 from basic.shamos_hoey_sweep import shamos_hoey_intersections
 from gui.file_utils import load_from_file, save_to_file
-from gui.primitives import Point, Line
+from gui.primitives import Line
 from gui.gui_with_canvas_and_toolbar import GuiWithCanvasAndToolbar
 from lab3.generate_gui import GenerateGui
 
