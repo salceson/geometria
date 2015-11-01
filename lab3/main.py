@@ -6,5 +6,6 @@ __author__ = 'Michał Ciołczyk'
 
 
 if __name__ == '__main__':
+
     gui = MainWindowGui()
     gui.main()

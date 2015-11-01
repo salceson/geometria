@@ -2,48 +2,38 @@
 from copy import deepcopy
 import heapq
 
-from bintrees import AVLTree
+# from bintrees import AVLTree
+from .avl_tree import AVLTree
 
 from .comparators import compare_lower_x_first_then_lower_y
 from .constants import epsilon
 from .intersections import intersects, get_intersection_point
+from .operators_mixin import OperatorMixin
 
 __author__ = 'Michał Ciołczyk'
 
 (_SEGMENT_START, _INTERSECTION, _SEGMENT_END) = (0, 1, 2)
 
 
-class _SegmentId(object):
+class _SegmentId(OperatorMixin):
     def __init__(self, idx, sweep_state):
         self.idx = idx
         self.sweep_state = sweep_state
 
     def __lt__(self, other):
-        return self.sweep_state(self) < self.sweep_state(other)
+        return self.sweep_state(self) - self.sweep_state(other) > 0
 
     def __str__(self):
-        return "SegmentId(%d)" % self.idx
+        return self.__repr__()
 
     def __repr__(self):
-        return self.__str__()
+        return "SegmentId(%d)" % self.idx
 
     def __eq__(self, other):
         return self.idx == other.idx
 
-    def __gt__(self, other):
-        return other.__le__(self)
 
-    def __le__(self, other):
-        return self.__le__(other) or self.__eq__(other)
-
-    def __ge__(self, other):
-        return other.__le__(self) or self.__eq__(other)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-
-class _Intersection(object):
+class _Intersection(OperatorMixin):
     def __init__(self, segment1, segment2):
         self.segment1 = segment1
         self.segment2 = segment2
@@ -51,9 +41,6 @@ class _Intersection(object):
     def __eq__(self, other):
         return (self.segment1 == other.segment1 and self.segment2 == other.segment2) \
                or (self.segment1 == other.segment2 and self.segment2 == other.segment1)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.segment1) + 31 * hash(self.segment2)
@@ -63,6 +50,9 @@ class _Intersection(object):
 
     def __repr__(self):
         return self.__str__()
+
+    def __lt__(self, other):
+        raise NotImplementedError
 
 
 class _SweepEvent(object):
@@ -115,32 +105,54 @@ class _SweepState(object):
         self.actual_segments = AVLTree()
 
     def insert_and_get_new_neighbours(self, new_segment_id):
+        print 'insert', new_segment_id
+        # print '\t', self.actual_segments
         new_neighbours = []
-        self.actual_segments.insert(new_segment_id, new_segment_id)
+        # self.actual_segments.insert(new_segment_id, new_segment_id)
+        self.actual_segments.insert(new_segment_id)
         try:
-            new_neighbours.append((self.actual_segments.prev_item(new_segment_id)[0], new_segment_id))
+            # new_neighbours.append((self.actual_segments.prev_item(new_segment_id)[0], new_segment_id))
+            pred = self.actual_segments.predecessor(new_segment_id)
+            if pred:
+                new_neighbours.append((pred, new_segment_id))
         except KeyError:
             pass
         try:
-            new_neighbours.append((self.actual_segments.succ_item(new_segment_id)[0], new_segment_id))
+            # new_neighbours.append((self.actual_segments.succ_item(new_segment_id)[0], new_segment_id))
+            succ = self.actual_segments.successor(new_segment_id)
+            if succ:
+                new_neighbours.append((succ, new_segment_id))
         except KeyError:
             pass
+        print '\t', self.actual_segments.in_order()
         return new_neighbours
 
     def erase_and_get_new_neighbours(self, segment_id):
+        print 'remove', segment_id
+        # print '\t', self.actual_segments
         new_neighbours = []
         try:
-            new_neighbours.append((self.actual_segments.prev_item(segment_id)[0], segment_id))
-            try:
-                new_neighbours.append((self.actual_segments.succ_item(segment_id)[0], segment_id))
-            except KeyError:
-                pass
+            # new_neighbours.append((self.actual_segments.prev_item(segment_id)[0], segment_id))
+            pred = self.actual_segments.predecessor(segment_id)
+            if pred:
+                new_neighbours.append((pred, segment_id))
         except KeyError:
             pass
-        self.actual_segments.remove(segment_id)
+        try:
+            # new_neighbours.append((self.actual_segments.succ_item(segment_id)[0], segment_id))
+            succ = self.actual_segments.successor(segment_id)
+            if succ:
+                new_neighbours.append((succ, segment_id))
+        except KeyError:
+            pass
+        # self.actual_segments.remove(segment_id)
+        self.actual_segments.delete(segment_id)
+        print '\t', self.actual_segments.in_order()
         return new_neighbours
 
     def swap_and_get_new_neighbours(self, segment1_id, segment2_id):
+        print 'swap', segment1_id, segment2_id
+        # print '\t', self.actual_segments
         pos_x = self.pos_x
         self.pos_x = pos_x - epsilon
         new_neighbours1 = self.erase_and_get_new_neighbours(segment1_id)
@@ -154,6 +166,7 @@ class _SweepState(object):
         for neighbours in all_neighbours:
             if neighbours != (segment1_id, segment2_id) and neighbours != (segment2_id, segment1_id):
                 new_neighbours.append(neighbours)
+        print '\t', self.actual_segments.in_order()
 
         return new_neighbours
 

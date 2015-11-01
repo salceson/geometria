@@ -1,11 +1,12 @@
 # coding=utf-8
+from .constants import epsilon
 from .det import det
 
 __author__ = 'Michał Ciołczyk'
 
 
 def _is_in_range(low, high, x):
-    return low <= x <= high
+    return low - x <= -epsilon and x - high <= - epsilon
 
 
 def _is_between(a, b, x):
