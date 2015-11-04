@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import csv
 
-from .primitives import Line, Point
+from .primitives import Line, Point, Polygon
 
 __author__ = 'Michał Ciołczyk'
 
@@ -38,8 +38,20 @@ def load_from_file(filename):
                     pass
             elif fig == "Point":
                 try:
-                    label = row[4].trim() if len(row) >= 5 else None
+                    label = row[4].strip() if len(row) >= 5 else None
                     figures.append(Point(float(row[1].strip()), float(row[2].strip()), row[3].strip(), label))
+                except:
+                    pass
+            elif fig == "Polygon":
+                try:
+                    c = row[1].strip()
+                    n = int(row[2].strip())
+                    points = []
+                    for i in range(n):
+                        x = float(row[3 + i * 2].strip())
+                        y = float(row[4 + i * 2].strip())
+                        points.append(Point(x, y, c))
+                    figures.append(Polygon(points, c))
                 except:
                     pass
     return figures

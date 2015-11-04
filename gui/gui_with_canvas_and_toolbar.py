@@ -100,10 +100,10 @@ class GuiWithCanvasAndToolbar(gtk.Window):
         if update:
             self.update_figures()
 
-    def update_figures(self, clear=True):
+    def update_figures(self, clear=True, polygon=False):
         if clear:
             self.ax.clear()
-        if len(self.figures) > 1:
+        if len(self.figures) > 1 or (len(self.figures) == 1 and polygon):
             dx = self.x_max - self.x_min
             dy = self.y_max - self.y_min
             dx *= 0.1
@@ -142,7 +142,7 @@ class GuiWithCanvasAndToolbar(gtk.Window):
 
     def wait(self, time_to_sleep):
         dt = 0.01 if time_to_sleep < 0.1 else 0.1
-        n = int(time_to_sleep/dt)
+        n = int(time_to_sleep / dt)
         for i in range(n):
             time.sleep(dt)
             self.updateGUI()

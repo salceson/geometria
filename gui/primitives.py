@@ -93,6 +93,9 @@ class Line(object):
         else:
             return False
 
+    def __repr__(self):
+        return self.__str__()
+
     def to_csv_line(self):
         x1 = "%.20f" % self.x1
         x2 = "%.20f" % self.x2
@@ -139,6 +142,9 @@ class Point(object):
     def __str__(self):
         return "Point(%f, %f, color=%s)" % (self.x, self.y, self.color)
 
+    def __repr__(self):
+        return self.__str__()
+
     def __unicode__(self):
         return self.__str__()
 
@@ -174,3 +180,58 @@ class Point(object):
         y = "%.20f" % self.y
         label = ", %s" % self.label if self.label else ''
         return "Point, %s, %s, %s%s" % (x, y, self.color, label)
+
+
+class Polygon(object):
+    def __init__(self, points, color):
+        if len(points) < 3:
+            raise ValueError("Polygon has to have at least 3 points")
+        self.points = points
+        self._min_x = reduce(lambda acc, x: x.x if x.x < acc else acc, self.points, float("inf"))
+        self._max_x = reduce(lambda acc, x: x.x if x.x > acc else acc, self.points, float("-inf"))
+        self._min_y = reduce(lambda acc, x: x.y if x.y < acc else acc, self.points, float("inf"))
+        self._max_y = reduce(lambda acc, x: x.y if x.y > acc else acc, self.points, float("-inf"))
+        self.color = color
+
+    def min_x(self):
+        return self._min_x
+
+    def max_x(self):
+        return self._max_x
+
+    def min_y(self):
+        return self._min_y
+
+    def max_y(self):
+        return self._max_y
+
+    def draw(self, ax, _=0, animate=False):
+        if animate:
+            figures = []
+            for i in range(len(self.points)):
+                point = self.points[i]
+                second_point = self.points[i - 1]
+                figures.append(plt.Line2D([point.x], [point.y], marker='o', color=self.color))
+                figures.append(plt.Line2D([point.x, second_point.x], [point.y, second_point.y], color=self.color))
+            return figures
+        else:
+            for i in range(len(self.points)):
+                point = self.points[i]
+                second_point = self.points[i - 1]
+                ax.plot([point.x], [point.y], 'o', c=self.color)
+                ax.plot([point.x, second_point.x], [point.y, second_point.y], c=self.color)
+
+    def to_csv_line(self):
+        return_str = 'Polygon,%s,%d' % (self.color, len(self.points))
+        for point in self.points:
+            return_str += ',%f,%f' % (point.x, point.y)
+        return return_str
+
+    def __str__(self):
+        return_str = 'Polygon(%s, %d' % (self.color, len(self.points))
+        for point in self.points:
+            return_str += ',%f,%f' % (point.x, point.y)
+        return return_str + ')'
+
+    def __repr__(self):
+        return self.__str__()
