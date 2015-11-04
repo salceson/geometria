@@ -88,7 +88,10 @@ class Line(object):
         return hash(self.point1) + 31 * hash(self.point2)
 
     def __eq__(self, other):
-        return self.point1 == other.point1 and self.point2 == other.point2
+        if isinstance(other, Line):
+            return self.point1 == other.point1 and self.point2 == other.point2
+        else:
+            return False
 
     def to_csv_line(self):
         x1 = "%.20f" % self.x1
@@ -140,7 +143,10 @@ class Point(object):
         return self.__str__()
 
     def __eq__(self, other):
-        return abs(self.x - other.x) <= epsilon and abs(self.y - other.y) <= epsilon
+        if isinstance(other, Point):
+            return abs(self.x - other.x) <= epsilon and abs(self.y - other.y) <= epsilon and self.color == other.color
+        else:
+            return False
 
     def __ne__(self, other):
         return not self.__eq__(other)

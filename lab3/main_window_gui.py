@@ -29,6 +29,9 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         generateButton.connect("clicked", self.generateClicked)
         clearButton = gtk.Button("Clear")
         clearButton.connect("clicked", self.clearClicked)
+        self.animatedCheckBox = gtk.CheckButton("Animated")
+        self.animatedCheckBox.connect("clicked", self.animatedClicked)
+        self.animated = False
         algoButton = gtk.Button("Run algorithm")
         algoButton.connect("clicked", self.algoClicked)
         openButton = gtk.Button("Load segments from file...")
@@ -37,7 +40,8 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         saveButton.connect("clicked", self.saveButtonClicked)
 
         toolBox = [segmentLabel, x1Label, self.x1Entry, y1Label, self.y1Entry, x2Label, self.x2Entry,
-                   y2Label, self.y2Entry, addButton, generateButton, clearButton, openButton, saveButton, algoButton]
+                   y2Label, self.y2Entry, addButton, generateButton, clearButton, openButton, saveButton,
+                   self.animatedCheckBox, algoButton]
 
         super(MainWindowGui, self).__init__(toolBox, "Lab 3 - sweep segments intersections", *args, **kwargs)
 
@@ -73,7 +77,7 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         self.segments = []
 
     def algoClicked(self, widget, data=None):
-        intersections = shamos_hoey_intersections(self.segments)
+        intersections = shamos_hoey_intersections(self.segments, self if self.animated else None)
         print intersections
 
     def openButtonClicked(self, widget, data=None):
@@ -131,3 +135,6 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
     def generateClicked(self, widget, data=None):
         gui = GenerateGui(self)
         gui.show_all()
+
+    def animatedClicked(self, widget, data=None):
+        self.animated = not self.animated

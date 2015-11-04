@@ -62,7 +62,7 @@ class GuiWithCanvasAndToolbar(gtk.Window):
         for f in figures:
             self.add_figure(f)
 
-    def remove_figure(self, figure):
+    def remove_figure(self, figure, update=True):
         self.figures.remove(figure)
         self.y_max = float("-inf")
         self.x_max = float("-inf")
@@ -81,15 +81,17 @@ class GuiWithCanvasAndToolbar(gtk.Window):
                 self.y_max = f_y_max
             if self.y_min > f_y_min:
                 self.y_min = f_y_min
-        self.update_figures()
+        if update:
+            self.update_figures()
 
-    def clear_figures(self):
+    def clear_figures(self, update=True):
         self.figures = []
         self.y_max = float("-inf")
         self.x_max = float("-inf")
         self.y_min = float("inf")
         self.x_min = float("inf")
-        self.update_figures()
+        if update:
+            self.update_figures()
 
     def update_figures(self, clear=True):
         if clear:
@@ -108,3 +110,15 @@ class GuiWithCanvasAndToolbar(gtk.Window):
         self.update_figures(False)
         self.show_all()
         gtk.main()
+
+    def get_min_x(self):
+        return self.x_min
+
+    def get_min_y(self):
+        return self.y_min
+
+    def get_max_x(self):
+        return self.x_max
+
+    def get_max_y(self):
+        return self.y_max

@@ -1,11 +1,13 @@
 # coding=utf-8
 from copy import deepcopy
 import heapq
+from time import sleep
 
 from bintrees import AVLTree
 
 from .comparators import compare_lower_x_first_then_lower_y
 from .constants import epsilon
+from gui.primitives import Line, Point
 from .intersections import intersects, get_intersection_point
 from .mixins import OperatorMixin
 
@@ -34,9 +36,10 @@ class _SegmentId(OperatorMixin):
 
 
 class _Intersection(OperatorMixin):
-    def __init__(self, segment1, segment2):
+    def __init__(self, segment1, segment2, intersection_point):
         self.segment1 = segment1
         self.segment2 = segment2
+        self.intersection_point = intersection_point
 
     def __eq__(self, other):
         return (self.segment1 == other.segment1 and self.segment2 == other.segment2) \
@@ -148,9 +151,12 @@ class _SweepState(object):
     def get_cross_y_with_sweep_for_segment_id(self, segment_id):
         return self._get_cross_y_with_sweep_for_segment(self.segments[segment_id.idx])
 
+    def get_segments_in_state(self):
+        return self.tree.values()
+
 
 def shamos_hoey_intersections(segments, visualization=None):
-    if len(segments) == 0:
+    if len(segments) <= 1:
         return []
 
     segments = deepcopy(segments)
@@ -167,10 +173,30 @@ def shamos_hoey_intersections(segments, visualization=None):
         heapq.heappush(events, _SweepEvent.from_one_segment(_SEGMENT_START, segment.point1, _SegmentId(i, state)))
         heapq.heappush(events, _SweepEvent.from_one_segment(_SEGMENT_END, segment.point2, _SegmentId(i, state)))
 
+    prev_sweep = None
+    prev_point = None
+
     while len(events) > 0:
         event = heapq.heappop(events)
         state.pos_x = event.point.x
         new_neighbours = []
+
+        if visualization:
+            if prev_sweep:
+                visualization.remove_figure(prev_sweep, False)
+            if prev_point:
+                visualization.remove_figure(prev_point, False)
+            y_min = visualization.get_min_y()
+            y_max = visualization.get_max_y()
+            dy = y_max - y_min
+            dy /= 20.0
+            sweep = Line(event.point.x, y_min - dy, event.point.x, y_max + dy, 'g')
+            point = Point(event.point.x, event.point.y, 'b')
+            visualization.add_figure(sweep)
+            visualization.add_figure(point)
+            visualization.update_figures()
+            prev_sweep = sweep
+            prev_point = point
 
         if event.event_type == _SEGMENT_START:
             new_neighbours = state.insert_and_get_new_neighbours(event.segment1)
@@ -185,15 +211,25 @@ def shamos_hoey_intersections(segments, visualization=None):
             segment2 = segments[segment_id2.idx]
 
             if intersects(segment1, segment2):
-                if _Intersection(segment_id1.idx, segment_id2.idx) in intersections \
-                        or _Intersection(segment_id2.idx, segment_id1.idx) in intersections:
+                intersection_point = get_intersection_point(segment1, segment2)
+                if _Intersection(segment_id1.idx, segment_id2.idx, intersection_point) in intersections \
+                        or _Intersection(segment_id2.idx, segment_id1.idx, intersection_point) in intersections:
                     continue
 
-                intersection_point = get_intersection_point(segment1, segment2)
                 new_event = _SweepEvent.from_two_segments(_INTERSECTION, intersection_point, segment_id1, segment_id2)
 
                 heapq.heappush(events, new_event)
 
-                intersections.add(_Intersection(segment_id1.idx, segment_id2.idx))
+                intersections.add(_Intersection(segment_id1.idx, segment_id2.idx, intersection_point))
 
-    return map(lambda i: (i.segment1, i.segment2), intersections)
+        if visualization:
+            sleep(0.25)
+
+    if visualization:
+        if prev_sweep:
+            visualization.remove_figure(prev_sweep, False)
+        if prev_point:
+            visualization.remove_figure(prev_point, False)
+        visualization.update_figures()
+
+    return intersections
