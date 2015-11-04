@@ -1,7 +1,6 @@
 # coding=utf-8
 from copy import deepcopy
 import heapq
-from time import sleep
 
 from bintrees import AVLTree
 

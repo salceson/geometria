@@ -16,17 +16,6 @@ __author__ = 'Michał Ciołczyk'
 # noinspection PyBroadException,PyPep8Naming
 class MainWindowGui(GuiWithCanvasAndToolbar):
     def __init__(self, *args, **kwargs):
-        segmentLabel = gtk.Label("Segment:")
-        x1Label = gtk.Label("X1:")
-        self.x1Entry = gtk.Entry(max=10)
-        y1Label = gtk.Label("Y1:")
-        self.y1Entry = gtk.Entry(max=10)
-        x2Label = gtk.Label("X2:")
-        self.x2Entry = gtk.Entry(max=10)
-        y2Label = gtk.Label("Y2:")
-        self.y2Entry = gtk.Entry(max=10)
-        addButton = gtk.Button("Add segment")
-        addButton.connect("clicked", self.addClicked)
         generateButton = gtk.Button("Generate data...")
         generateButton.connect("clicked", self.generateClicked)
         clearButton = gtk.Button("Clear")
@@ -41,40 +30,13 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         saveButton = gtk.Button("Save segments to file...")
         saveButton.connect("clicked", self.saveButtonClicked)
 
-        toolBox = [segmentLabel, x1Label, self.x1Entry, y1Label, self.y1Entry, x2Label, self.x2Entry,
-                   y2Label, self.y2Entry, addButton, generateButton, clearButton, openButton, saveButton,
-                   self.animatedCheckBox, algoButton]
+        toolBox = [generateButton, clearButton, openButton, saveButton, self.animatedCheckBox, algoButton]
 
-        super(MainWindowGui, self).__init__(toolBox, "Lab 3 - sweep segments intersections", *args, **kwargs)
+        super(MainWindowGui, self).__init__(toolBox, "Lab 4 - monotonic polygon triangulation", *args, **kwargs)
 
         self.segments = []
         self.intersections = []
         self.prev_point = None
-
-    def addClicked(self, widget, data=None):
-        try:
-            x1 = float(self.x1Entry.get_text())
-            y1 = float(self.y1Entry.get_text())
-            x2 = float(self.x2Entry.get_text())
-            y2 = float(self.y2Entry.get_text())
-
-            if x1 == x2 and y1 == y2:
-                return
-
-            if x1 > x2:
-                (x2, x1) = (x1, x2)
-                (y2, y1) = (y1, y2)
-
-            segment = Line(x1, y1, x2, y2, 'r')
-
-            self.add_figure(segment)
-            self.add_figure(segment.point1)
-            self.add_figure(segment.point2)
-            self.update_figures()
-
-            self.segments.append(segment)
-        except:
-            pass
 
     def clearClicked(self, widget, data=None):
         self.clear_figures()
@@ -88,7 +50,7 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         time_start = time.time()
         _, intersections = shamos_hoey_intersections(self.segments, self if self.animated else None)
         time_end = time.time()
-        if not self.animated and len(self.segments) <= 100:
+        if not self.animated:
             for f in list(map(lambda i: i.intersection_point, intersections)):
                 self.add_figure(f)
             self.update_figures()
