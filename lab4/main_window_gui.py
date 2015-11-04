@@ -5,7 +5,6 @@ import os
 from gui.file_utils import load_from_file, save_to_file
 from gui.primitives import Line, Point, Polygon
 from gui.gui_with_canvas_and_toolbar import GuiWithCanvasAndToolbar
-from lab3.generate_gui import GenerateGui
 
 __author__ = 'Michał Ciołczyk'
 
@@ -17,8 +16,8 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
                               "the polygon's points. When\nfinished, press right mouse button.")
         clearButton = gtk.Button("Clear")
         clearButton.connect("clicked", self.clearClicked)
-        self.animatedCheckBox = gtk.CheckButton("Animated")
-        self.animatedCheckBox.connect("clicked", self.animatedClicked)
+        animatedCheckBox = gtk.CheckButton("Animated")
+        animatedCheckBox.connect("clicked", self.animatedClicked)
         self.animated = False
         algoButton = gtk.Button("Run algorithm")
         algoButton.connect("clicked", self.algoClicked)
@@ -27,7 +26,7 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         saveButton = gtk.Button("Save polygon to file...")
         saveButton.connect("clicked", self.saveButtonClicked)
 
-        toolBox = [infoLabel, clearButton, openButton, saveButton, self.animatedCheckBox, algoButton]
+        toolBox = [infoLabel, clearButton, openButton, saveButton, animatedCheckBox, algoButton]
 
         super(MainWindowGui, self).__init__(toolBox, "Lab 4 - monotonic polygon triangulation", *args, **kwargs)
 
@@ -95,10 +94,6 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
                 save_to_file(chooser.get_filename(), [self.polygon])
         finally:
             chooser.destroy()
-
-    def generateClicked(self, widget, data=None):
-        gui = GenerateGui(self)
-        gui.show_all()
 
     def animatedClicked(self, widget, data=None):
         self.animated = not self.animated
