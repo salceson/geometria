@@ -1,11 +1,13 @@
 # coding=utf-8
 import gtk
 import os
+import time
 
 from basic.shamos_hoey_sweep import shamos_hoey_intersections
 from gui.file_utils import load_from_file, save_to_file
-from gui.primitives import Line
+from gui.primitives import Line, Point
 from gui.gui_with_canvas_and_toolbar import GuiWithCanvasAndToolbar
+from lab3.algorithm_results import AlgorithmResultsGUI
 from lab3.generate_gui import GenerateGui
 
 __author__ = 'Michał Ciołczyk'
@@ -46,6 +48,8 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         super(MainWindowGui, self).__init__(toolBox, "Lab 3 - sweep segments intersections", *args, **kwargs)
 
         self.segments = []
+        self.intersections = []
+        self.prev_point = None
 
     def addClicked(self, widget, data=None):
         try:
@@ -74,11 +78,22 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
 
     def clearClicked(self, widget, data=None):
         self.clear_figures()
+        self.prev_point = None
         self.segments = []
 
     def algoClicked(self, widget, data=None):
-        intersections = shamos_hoey_intersections(self.segments, self if self.animated else None)
-        print intersections
+        for f in list(map(lambda i: i.intersection_point, self.intersections)):
+            self.remove_figure(f, False)
+        self.update_figures()
+        time_start = time.time()
+        _, intersections = shamos_hoey_intersections(self.segments, self if self.animated else None)
+        time_end = time.time()
+        if not self.animated:
+            for f in list(map(lambda i: i.intersection_point, intersections)):
+                self.add_figure(f)
+            self.update_figures()
+        self.intersections = intersections
+        AlgorithmResultsGUI(intersections, time_end - time_start)
 
     def openButtonClicked(self, widget, data=None):
         self.clearClicked(None)
@@ -138,3 +153,21 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
 
     def animatedClicked(self, widget, data=None):
         self.animated = not self.animated
+
+    def handle_click(self, event):
+        button = event.button
+        if button == 1:
+            new_point = Point(event.xdata, event.ydata, 'r')
+            prev_point = self.prev_point
+            self.add_figure(new_point)
+            if prev_point:
+                if prev_point.x > new_point.x:
+                    (prev_point, new_point) = (new_point, prev_point)
+                line = Line.from_points(prev_point, new_point, 'r')
+                self.add_figure(line)
+                self.segments.append(line)
+                self.prev_point = None
+            else:
+                self.prev_point = new_point
+            self.update_figures()
+            self.wait(0.05)

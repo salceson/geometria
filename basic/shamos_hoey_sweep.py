@@ -49,7 +49,7 @@ class _Intersection(OperatorMixin):
         return hash(self.segment1) + 31 * hash(self.segment2)
 
     def __str__(self):
-        return "Intersection(%d, %d)" % (self.segment1, self.segment2)
+        return "Intersection(%d, %d, %s)" % (self.segment1, self.segment2, str(self.intersection_point))
 
     def __repr__(self):
         return self.__str__()
@@ -157,7 +157,7 @@ class _SweepState(object):
 
 def shamos_hoey_intersections(segments, visualization=None):
     if len(segments) <= 1:
-        return []
+        return [], []
 
     segments = deepcopy(segments)
 
@@ -175,6 +175,8 @@ def shamos_hoey_intersections(segments, visualization=None):
 
     prev_sweep = None
     prev_point = None
+    current_point = None
+    prev_state = []
 
     while len(events) > 0:
         event = heapq.heappop(events)
@@ -186,17 +188,25 @@ def shamos_hoey_intersections(segments, visualization=None):
                 visualization.remove_figure(prev_sweep, False)
             if prev_point:
                 visualization.remove_figure(prev_point, False)
+            if len(prev_state) > 0:
+                for f in prev_state:
+                    visualization.remove_figure(f, False)
+            new_state = []
+            for segment in state.get_segments_in_state():
+                segment = segments[segment.idx]
+                l = Line(segment.x1, segment.y1, segment.x2, segment.y2, 'm')
+                visualization.add_figure(l)
+                new_state.append(l)
             y_min = visualization.get_min_y()
             y_max = visualization.get_max_y()
             dy = y_max - y_min
             dy /= 20.0
             sweep = Line(event.point.x, y_min - dy, event.point.x, y_max + dy, 'g')
-            point = Point(event.point.x, event.point.y, 'b')
+            current_point = Point(event.point.x, event.point.y, 'b')
             visualization.add_figure(sweep)
-            visualization.add_figure(point)
-            visualization.update_figures()
             prev_sweep = sweep
-            prev_point = point
+            prev_point = current_point
+            prev_state = new_state
 
         if event.event_type == _SEGMENT_START:
             new_neighbours = state.insert_and_get_new_neighbours(event.segment1)
@@ -212,6 +222,7 @@ def shamos_hoey_intersections(segments, visualization=None):
 
             if intersects(segment1, segment2):
                 intersection_point = get_intersection_point(segment1, segment2)
+                intersection_point.color = 'y'
                 if _Intersection(segment_id1.idx, segment_id2.idx, intersection_point) in intersections \
                         or _Intersection(segment_id2.idx, segment_id1.idx, intersection_point) in intersections:
                     continue
@@ -223,13 +234,21 @@ def shamos_hoey_intersections(segments, visualization=None):
                 intersections.add(_Intersection(segment_id1.idx, segment_id2.idx, intersection_point))
 
         if visualization:
-            sleep(0.25)
+            for f in list(map(lambda i: i.intersection_point, intersections)):
+                visualization.remove_figure(f, False)
+                visualization.add_figure(f)
+            visualization.add_figure(current_point)
+            visualization.update_figures()
+            visualization.wait(0.25)
 
     if visualization:
+        visualization.wait(0.25)
         if prev_sweep:
             visualization.remove_figure(prev_sweep, False)
         if prev_point:
             visualization.remove_figure(prev_point, False)
+        for f in prev_state:
+            visualization.remove_figure(f, False)
         visualization.update_figures()
 
-    return intersections
+    return list(map(lambda x: (x.segment1, x.segment2), intersections)), list(intersections)
