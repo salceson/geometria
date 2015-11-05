@@ -9,6 +9,7 @@ class AlgorithmResultsGUI(gtk.Window):
     def __init__(self, intersections, time, *args, **kwargs):
         super(AlgorithmResultsGUI, self).__init__(*args, **kwargs)
         self.set_size_request(400, 300)
+        self.set_title("Algorithm results")
         table = gtk.Table(3, 1)
         finished_label = gtk.Label('The algorithm has finished. Below are results:')
         table.attach(finished_label, 0, 1, 0, 1)
