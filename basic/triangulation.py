@@ -104,7 +104,7 @@ def classify_polygon(polygon):
     return classifications, points
 
 
-def _divide_polygon(polygon):
+def _divide_polygon(polygon, basic_orientation):
     highest_y_index = reduce(lambda acc, x: acc if polygon.points[acc].y > polygon.points[x].y else x,
                              range(1, len(polygon.points)), 0)
     left = []
@@ -129,7 +129,10 @@ def _divide_polygon(polygon):
         right.append(polygon.points[current_index])
         current_index = _index(current_index - 1, points_len)
 
-    return left, right
+    if basic_orientation < 0:
+        return left, right
+    else:
+        return right, left
 
 
 def _triangle(a, b, c, color='black'):
@@ -152,9 +155,19 @@ def triangulate_y_monotonic_polygon(polygon, visualization=None):
 
     points_len = len(polygon.points)
     triangles = []
-    left, right = _divide_polygon(polygon)
+
+    # Check for polygon orientation
+    basic_orientation = 0
+    for i in range(points_len):
+        next_index = _index(i + 1, points_len)
+        point = polygon.points[i]
+        next_point = polygon.points[next_index]
+        basic_orientation += (next_point.x - point.x) * (next_point.y + point.y)
+
+    left, right = _divide_polygon(polygon, basic_orientation)
     points = sorted([(p, _LEFT) for p in left] + [(p, _RIGHT) for p in right],
                     cmp=higher_y_then_lower_x_annotated)
+
     stack = [points[0], points[1]]
 
     for i in range(2, points_len):
