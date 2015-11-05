@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from .comparators import above_y, below_y, is_below_or_same_y, higher_y_than_lower_y_annotated
+from .comparators import above_y, below_y, is_below_or_same_y, higher_y_then_lower_x_annotated
 from .orient import orient
 from gui.primitives import Point, Polygon
 
@@ -139,7 +139,7 @@ def _triangle(a, b, c, color='black'):
 def _is_inside(triangle, side):
     [p, q, r] = triangle.points
     orientation = orient(p, q, r)
-    return (side == _LEFT and orientation < 0) or (side == _RIGHT and orientation > 0)
+    return (side == _LEFT and orientation > 0) or (side == _RIGHT and orientation < 0)
 
 
 def _get_pairs(stack):
@@ -154,7 +154,7 @@ def triangulate_y_monotonic_polygon(polygon, visualization=None):
     triangles = []
     left, right = _divide_polygon(polygon)
     points = sorted([(p, _LEFT) for p in left] + [(p, _RIGHT) for p in right],
-                    cmp=higher_y_than_lower_y_annotated)
+                    cmp=higher_y_then_lower_x_annotated)
     stack = [points[0], points[1]]
 
     for i in range(2, points_len):
@@ -165,8 +165,7 @@ def triangulate_y_monotonic_polygon(polygon, visualization=None):
             pairs = _get_pairs(stack)
             for pair in pairs:
                 triangle = _triangle(point[0], pair[0], pair[1], 'black')
-                if _is_inside(triangle, point[1]):
-                    triangles.append(triangle)
+                triangles.append(triangle)
             stack = [top, point]
         else:
             pairs = _get_pairs(stack)
@@ -177,7 +176,7 @@ def triangulate_y_monotonic_polygon(polygon, visualization=None):
                     break
                 triangles.append(triangle)
                 last = stack.pop()
-            points.append(last)
-            points.append(point)
+            stack.append(last)
+            stack.append(point)
 
     return triangles
