@@ -1,9 +1,15 @@
 # coding=utf-8
 import gtk
+import time
 
 from matplotlib.figure import Figure
+
 from matplotlib.backends.backend_gtkagg import FigureCanvasGTKAgg as FigureCanvas
-import time
+from matplotlib.lines import Line2D
+import matplotlib
+
+matplotlib.rcParams['legend.handlelength'] = 0
+matplotlib.rcParams['legend.numpoints'] = 1
 
 __author__ = 'Michał Ciołczyk'
 
@@ -149,3 +155,11 @@ class GuiWithCanvasAndToolbar(gtk.Window):
 
     def handle_click(self, event):
         pass
+
+    def legend(self, colors_dict):
+        legends = []
+        for key in colors_dict:
+            legends.append(Line2D([], [], color=key, marker='o', linestyle='None',
+                                  label=colors_dict[key]))
+        self.ax.legend(handles=legends, loc=0, scatterpoints=1)
+        self.canvas.draw()

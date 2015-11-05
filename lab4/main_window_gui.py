@@ -3,10 +3,11 @@ import gtk
 import os
 import time
 
-from basic.triangulation import is_y_monotonic
+from basic.triangulation import is_y_monotonic, classify_polygon, triangulate_y_monotonic_polygon
 from gui.file_utils import load_from_file, save_to_file
 from gui.primitives import Line, Point, Polygon
 from gui.gui_with_canvas_and_toolbar import GuiWithCanvasAndToolbar
+from lab4.algorithm_results import AlgorithmResultsGUI
 from lab4.is_monotonic_gui import IsMonotonicGUI
 
 __author__ = 'Michał Ciołczyk'
@@ -24,6 +25,8 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         self.animated = False
         monotonicButton = gtk.Button("Check if polygon is y-monotonic")
         monotonicButton.connect("clicked", self.monotonicClicked)
+        classifyButton = gtk.Button("Classify polygon's points")
+        classifyButton.connect("clicked", self.classifyClicked)
         algoButton = gtk.Button("Triangulate (y-monotonic polygons only)")
         algoButton.connect("clicked", self.algoClicked)
         openButton = gtk.Button("Load polygon from file...")
@@ -31,7 +34,8 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         saveButton = gtk.Button("Save polygon to file...")
         saveButton.connect("clicked", self.saveButtonClicked)
 
-        toolBox = [infoLabel, clearButton, openButton, saveButton, monotonicButton, animatedCheckBox, algoButton]
+        toolBox = [infoLabel, clearButton, openButton, saveButton, monotonicButton,
+                   classifyButton, animatedCheckBox, algoButton]
 
         super(MainWindowGui, self).__init__(toolBox, "Lab 4 - monotonic polygon triangulation", *args, **kwargs)
 
@@ -46,7 +50,15 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         self.points = []
 
     def algoClicked(self, widget, data=None):
-        pass
+        try:
+            time_start = time.time()
+            triangles = triangulate_y_monotonic_polygon(self.polygon, self if self.animated else None)
+            time_end = time.time()
+            self.add_all_figures(triangles)
+            self.update_figures()
+            AlgorithmResultsGUI(triangles, time_end - time_start)
+        except ValueError as e:
+            print e
 
     def openButtonClicked(self, widget, data=None):
         self.clearClicked(None)
@@ -104,11 +116,15 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
 
     def handle_click(self, event):
         button = event.button
+
+        if not event.xdata or not event.ydata:
+            return
+
         if button == 1:
-            new_point = Point(event.xdata, event.ydata, 'r')
+            new_point = Point(event.xdata, event.ydata, 'black')
             prev_point = self.prev_point
             if prev_point:
-                line = Line.from_points(prev_point, new_point, 'r')
+                line = Line.from_points(prev_point, new_point, 'black')
                 self.add_figure(line)
             else:
                 self.points = []
@@ -121,7 +137,7 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
             self.wait(0.05)
         elif button == 3 and len(self.points) >= 3:
             self.clear_figures(False)
-            self.polygon = Polygon(self.points, 'r')
+            self.polygon = Polygon(self.points, 'black')
             self.add_figure(self.polygon)
             self.update_figures(polygon=True)
             self.prev_point = None
@@ -133,3 +149,17 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
             result = is_y_monotonic(self.polygon)
             time_end = time.time()
             IsMonotonicGUI(result, time_end - time_start)
+
+    def classifyClicked(self, widget, data=None):
+        if self.polygon:
+            _, points = classify_polygon(self.polygon)
+            self.add_all_figures(points)
+            self.update_figures()
+            colors_dict = {
+                'green': 'Start point',
+                'red': 'End point',
+                'blue': 'Merging point',
+                'cyan': 'Split point',
+                'brown': 'Regular point',
+            }
+            self.legend(colors_dict)
