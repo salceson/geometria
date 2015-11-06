@@ -4,6 +4,8 @@ Geometria Obliczeniowa
 * Laboratorium 1 - podstawowe predykaty geometryczne
 * Laboratorium 2 - otoczka wypukła
 * Laboratorium 3 - przecięcia odcinków metodą zamiatania
+* Laboratorium 4 - klasyfikacja punktów w wielokącie, sprawdzenie,
+ czy wielokąt jest y-monotoniczny, triangulacja wielokąta y-monotonicznego
 
 # SimGUI
 
