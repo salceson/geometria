@@ -52,7 +52,7 @@ def generate_d(n1, n2, x2, y2, x3, y3, x4, y4):
     vec_ax2 = (x4 - x1, y4 - y1)
     vec_diag1 = (x3 - x1, y3 - y1)
     vec_diag2 = (x4 - x2, y4 - y2)
-    points = []
+    points = [Point(x1, y1, 'b'), Point(x2, y2, 'b'), Point(x3, y3, 'b'), Point(x4, y4, 'b')]
     ts1 = np.random.uniform(0.0, 1.0, 2 * n1)
     ts2 = np.random.uniform(0.0, 1.0, 2 * n2)
     for i in xrange(0, 2 * n1, 2):
