@@ -67,7 +67,8 @@ class Triangle(object):
         return None
 
     def __str__(self):
-        return "triangle: (" + str(edge_of_neighbor(self.n1).p1) + ", " + str(edge_of_neighbor(self.n2).p1) + ", " + str(edge_of_neighbor(self.n3).p1) + ")"
+        return "triangle: (" + str(edge_of_neighbor(self.n1).p1) + ", " + str(
+            edge_of_neighbor(self.n2).p1) + ", " + str(edge_of_neighbor(self.n3).p1) + ")"
 
 
 class Edge(OperatorMixin):
@@ -83,6 +84,9 @@ class Edge(OperatorMixin):
 
     def __str__(self):
         return "edge: (" + str(self.p1) + ", " + str(self.p2) + ")"
+
+    def __contains__(self, point):
+        return orient(self.p1, self.p2, point) == 0
 
 
 def is_illegal(t, pk):
@@ -192,7 +196,7 @@ def triangulate(points_list, visualization=None):
     point_min_y = reduce(lambda acc, i: points_list[i] if points_list[i].y < acc.y else acc,
                          xrange(1, len(points_list)), points_list[0])
 
-    M = max(point_max_x.x - point_min_x.x, point_max_y.y - point_min_y.y)/2.0
+    M = max(point_max_x.x - point_min_x.x, point_max_y.y - point_min_y.y) / 2.0
 
     middle_point = Point((point_max_x.x + point_min_x.x) / 2.0, (point_max_y.y + point_min_y.y) / 2.0, 'b')
 
@@ -206,9 +210,10 @@ def triangulate(points_list, visualization=None):
         [Edge(p3, p1), None]
     )])
 
-    np.random.shuffle(points_list)
+    # np.random.shuffle(points_list)
 
     for p in points_list:
+        print "\ninserting point: " + str(p)
         triangle = search_struct.find(p)
         if triangle.is_inside(p):
             [ne1, nt1], [ne2, nt2], [ne3, nt3] = search_struct.delete(triangle)
@@ -230,11 +235,11 @@ def triangulate(points_list, visualization=None):
             t2.n2[1] = t3
             t1.n2[1] = t2
             t1.n3[1] = t3
-            if nt1 is not None:
+            if nt1:
                 nt1.set_neighbor(ne1, t1)
-            if nt2 is not None:
+            if nt2:
                 nt2.set_neighbor(ne2, t2)
-            if nt3 is not None:
+            if nt3:
                 nt3.set_neighbor(ne3, t3)
             [search_struct.add(t) for t in [t1, t2, t3]]
             # Legalizing edges
@@ -242,13 +247,103 @@ def triangulate(points_list, visualization=None):
             search_struct.legalize_edge(t2, ne2, nt2)
             search_struct.legalize_edge(t3, ne3, nt3)
         else:
-            pass
-
+            [ne1, nt1], [ne2, nt2], [ne3, nt3] = triangle.n1, triangle.n2, triangle.n3
+            if p in ne1:
+                ne = ne1
+                nt = nt1
+            elif p in ne2:
+                ne = ne2
+                nt = nt2
+            else:
+                ne = ne3
+                nt = nt3
+            if nt:
+                (pr, pi, pj, pk, pl) = (p, ne.p2, ne.p1, triangle.opposite_point(ne), nt.opposite_point(ne))
+                search_struct.delete(triangle)
+                search_struct.delete(nt)
+                e_kj = Edge(pk, pj)
+                n_kj = triangle.get_neighbor(e_kj)
+                e_ik = Edge(pi, pk)
+                n_ik = triangle.get_neighbor(e_ik)
+                e_jl = Edge(pj, pl)
+                n_jl = nt.get_neighbor(e_jl)
+                e_li = Edge(pl, pi)
+                n_li = nt.get_neighbor(e_li)
+                t_rik = Triangle(
+                    [Edge(pr, pi), None],
+                    [Edge(pi, pk), n_ik],
+                    [Edge(pk, pr), None]
+                )
+                t_rkj = Triangle(
+                    [Edge(pr, pk), t_rik],
+                    [Edge(pk, pj), n_kj],
+                    [Edge(pj, pr), None]
+                )
+                t_rjl = Triangle(
+                    [Edge(pr, pj), t_rkj],
+                    [Edge(pj, pl), n_jl],
+                    [Edge(pl, pr), None]
+                )
+                t_rli = Triangle(
+                    [Edge(pr, pl), t_rjl],
+                    [Edge(pl, pi), n_li],
+                    [Edge(pi, pr), t_rik]
+                )
+                t_rik.n1[1] = t_rli
+                t_rik.n3[1] = t_rkj
+                t_rkj.n3[1] = t_rjl
+                t_rjl.n3[1] = t_rli
+                if n_kj:
+                    n_kj.set_neighbor(e_kj, t_rkj)
+                if n_jl:
+                    n_jl.set_neighbor(e_jl, t_rjl)
+                if n_li:
+                    n_li.set_neighbor(e_li, t_rli)
+                if n_ik:
+                    n_ik.set_neighbor(e_ik, t_rik)
+                # Add triangles
+                search_struct.add(t_rli)
+                search_struct.add(t_rjl)
+                search_struct.add(t_rkj)
+                search_struct.add(t_rik)
+                # Legalize edges:
+                search_struct.legalize_edge(t_rli, e_li, n_li)
+                search_struct.legalize_edge(t_rjl, e_jl, n_jl)
+                search_struct.legalize_edge(t_rkj, e_kj, n_kj)
+                search_struct.legalize_edge(t_rik, e_ik, n_ik)
+            else:
+                (pr, pi, pj, pk) = (p, ne.p2, ne.p1, triangle.opposite_point(ne))
+                search_struct.delete(triangle)
+                e_kj = Edge(pk, pj)
+                n_kj = triangle.get_neighbor(e_kj)
+                e_ik = Edge(pi, pk)
+                n_ik = triangle.get_neighbor(e_ik)
+                t_rik = Triangle(
+                    [Edge(pr, pi), None],
+                    [Edge(pi, pk), n_ik],
+                    [Edge(pk, pr), None]
+                )
+                t_rkj = Triangle(
+                    [Edge(pr, pk), t_rik],
+                    [Edge(pk, pj), n_kj],
+                    [Edge(pj, pr), None]
+                )
+                t_rik.n3[1] = t_rkj
+                if n_kj:
+                    n_kj.set_neighbor(e_kj, t_rkj)
+                if n_ik:
+                    n_ik.set_neighbor(e_ik, t_rik)
+                # Add triangles
+                search_struct.add(t_rkj)
+                search_struct.add(t_rik)
+                # Legalize edges:
+                search_struct.legalize_edge(t_rkj, e_kj, n_kj)
+                search_struct.legalize_edge(t_rik, e_ik, n_ik)
         for t in search_struct.triangles:
             print t
-        print "\ninserting point: " + str(p)
     pass
 
+
 if __name__ == "__main__":
-    points = [Point(0.1,0.1), Point(2,0), Point(1.1,-2), Point(1,-1)]
+    points = [Point(0, 0), Point(2, 0), Point(1, 2), Point(1, 1)]
     triangulate(points)
