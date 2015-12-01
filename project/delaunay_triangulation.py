@@ -209,9 +209,6 @@ def triangulate(points_list, visualization=None):
     np.random.shuffle(points_list)
 
     for p in points_list:
-        for t in search_struct.triangles:
-            print t
-        print "\ninserting point: " + str(p)
         triangle = search_struct.find(p)
         if triangle.is_inside(p):
             [ne1, nt1], [ne2, nt2], [ne3, nt3] = search_struct.delete(triangle)
@@ -246,8 +243,12 @@ def triangulate(points_list, visualization=None):
             search_struct.legalize_edge(t3, ne3, nt3)
         else:
             pass
+
+        for t in search_struct.triangles:
+            print t
+        print "\ninserting point: " + str(p)
     pass
 
 if __name__ == "__main__":
-    points = [Point(0.1,0.1), Point(2,0), Point(1.1,2), Point(1,1)]
+    points = [Point(0.1,0.1), Point(2,0), Point(1.1,-2), Point(1,-1)]
     triangulate(points)
