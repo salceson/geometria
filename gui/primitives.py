@@ -107,7 +107,7 @@ class Line(object):
 
 # noinspection PyTypeChecker
 class Point(object):
-    def __init__(self, x, y, color, label=None):
+    def __init__(self, x, y, color='k', label=None):
         self.x = x
         self.y = y
         self.color = color

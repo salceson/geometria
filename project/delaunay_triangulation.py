@@ -37,7 +37,7 @@ class Triangle(object):
         return self._point_orient(point) in [2, 3]
 
     def is_inside(self, point):
-        self._point_orient(point) == 3
+        return self._point_orient(point) == 3
 
     def set_neighbor(self, edge, new_neighbor):
         if edge == edge_of_neighbor(self.n1):
@@ -66,6 +66,9 @@ class Triangle(object):
             return triangle_of_neighbor(self.n3)
         return None
 
+    def __str__(self):
+        return "triangle: (" + str(edge_of_neighbor(self.n1).p1) + ", " + str(edge_of_neighbor(self.n2).p1) + ", " + str(edge_of_neighbor(self.n3).p1) + ")"
+
 
 class Edge(OperatorMixin):
     def __init__(self, p1, p2):
@@ -77,6 +80,9 @@ class Edge(OperatorMixin):
 
     def __lt__(self, other):
         raise NotImplementedError()
+
+    def __str__(self):
+        return "edge: (" + str(self.p1) + ", " + str(self.p2) + ")"
 
 
 def is_illegal(t, pk):
@@ -111,6 +117,10 @@ class BruteTriangles(object):
         :param e: edge
         :param t2: already existing neighbor having edge e
         """
+        if t2 is None:
+            # t1 is external, nothing to do
+            return
+
         pk = t2.opposite_point(e)
         pr = t1.opposite_point(e)
         pi = e.p1
@@ -118,17 +128,35 @@ class BruteTriangles(object):
         if is_illegal(t1, pk):
             self.delete(t1)
             self.delete(t2)
+
+            # 4 neighbors of t1 and t2:
+            n_ri = t1.get_neighbor(Edge(pr, pi))
+            n_ik = t2.get_neighbor(Edge(pi, pk))
+            n_kj = t2.get_neighbor(Edge(pk, pj))
+            n_jr = t1.get_neighbor(Edge(pj, pr))
+
             new_t1 = Triangle(
-                [Edge(pr, pi), t1.get_neighbor(Edge(pr, pi))],
-                [Edge(pi, pk), t2.get_neighbor(Edge(pi, pk))],
+                [Edge(pr, pi), n_ri],
+                [Edge(pi, pk), n_ik],
                 [Edge(pk, pr), None]
             )
             new_t2 = Triangle(
-                [Edge(pr, pk), t1.get_neighbor(Edge(pr, pk))],
-                [Edge(pk, pj), t2.get_neighbor(Edge(pk, pj))],
-                [Edge(pj, pr), new_t1]
+                [Edge(pr, pk), new_t1],
+                [Edge(pk, pj), n_kj],
+                [Edge(pj, pr), n_jr]
             )
             new_t1.n3[1] = new_t2
+
+            # set 4 neighbors references to new triangles:
+            if n_ri is not None:
+                n_ri.set_neighbor(Edge(pr, pi), new_t1)
+            if n_ik is not None:
+                n_ik.set_neighbor(Edge(pi, pk), new_t1)
+            if n_kj is not None:
+                n_kj.set_neighbor(Edge(pk, pj), new_t2)
+            if n_jr is not None:
+                n_jr.set_neighbor(Edge(pj, pr), new_t2)
+
             self.add(new_t1)
             self.add(new_t2)
             self.legalize_edge(new_t1, new_t1.n2[0], new_t1.n2[1])
@@ -139,11 +167,14 @@ class BruteTriangles(object):
         n2 = triangle.n2
         n3 = triangle.n3
         t1 = triangle_of_neighbor(n1)
-        t2 = triangle_of_neighbor(n1)
-        t3 = triangle_of_neighbor(n1)
-        t1.set_neigbor(edge_of_neighbor(n1), None)
-        t2.set_neigbor(edge_of_neighbor(n2), None)
-        t3.set_neigbor(edge_of_neighbor(n3), None)
+        t2 = triangle_of_neighbor(n2)
+        t3 = triangle_of_neighbor(n3)
+        if t1 is not None:
+            t1.set_neighbor(edge_of_neighbor(n1), None)
+        if t2 is not None:
+            t2.set_neighbor(edge_of_neighbor(n2), None)
+        if t3 is not None:
+            t3.set_neighbor(edge_of_neighbor(n3), None)
         self.triangles.remove(triangle)
         return n1, n2, n3
 
@@ -161,7 +192,7 @@ def triangulate(points_list, visualization=None):
     point_min_y = reduce(lambda acc, i: points_list[i] if points_list[i].y < acc.y else acc,
                          xrange(1, len(points_list)), points_list[0])
 
-    M = max(point_max_x.x - point_min_x.x, point_max_y.y - point_min_y.y)
+    M = max(point_max_x.x - point_min_x.x, point_max_y.y - point_min_y.y)/2.0
 
     middle_point = Point((point_max_x.x + point_min_x.x) / 2.0, (point_max_y.y + point_min_y.y) / 2.0, 'b')
 
@@ -178,8 +209,11 @@ def triangulate(points_list, visualization=None):
     np.random.shuffle(points_list)
 
     for p in points_list:
+        for t in search_struct.triangles:
+            print t
+        print "\ninserting point: " + str(p)
         triangle = search_struct.find(p)
-        if triangle.inside(p):
+        if triangle.is_inside(p):
             [ne1, nt1], [ne2, nt2], [ne3, nt3] = search_struct.delete(triangle)
             t1 = Triangle(
                 [ne1, nt1],
@@ -199,9 +233,12 @@ def triangulate(points_list, visualization=None):
             t2.n2[1] = t3
             t1.n2[1] = t2
             t1.n3[1] = t3
-            nt1.set_neighbor(ne1, t1)
-            nt2.set_neighbor(ne2, t2)
-            nt3.set_neighbor(ne3, t3)
+            if nt1 is not None:
+                nt1.set_neighbor(ne1, t1)
+            if nt2 is not None:
+                nt2.set_neighbor(ne2, t2)
+            if nt3 is not None:
+                nt3.set_neighbor(ne3, t3)
             [search_struct.add(t) for t in [t1, t2, t3]]
             # Legalizing edges
             search_struct.legalize_edge(t1, ne1, nt1)
@@ -210,3 +247,7 @@ def triangulate(points_list, visualization=None):
         else:
             pass
     pass
+
+if __name__ == "__main__":
+    points = [Point(0.1,0.1), Point(2,0), Point(1.1,2), Point(1,1)]
+    triangulate(points)
