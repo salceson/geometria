@@ -4,6 +4,7 @@ import numpy as np
 from basic.mixins import OperatorMixin
 from basic.orient import orient
 from gui.primitives import Point
+from basic.constants import epsilon
 
 __author__ = 'Michał Ciołczyk, Michał Janczykowski'
 
@@ -65,6 +66,9 @@ class Triangle(object):
         if edge_of_neighbor(self.n3) == e:
             return triangle_of_neighbor(self.n3)
         return None
+
+    def get_points(self):
+        return [self.n1[0].p1, self.n2[0].p1,self.n3[0].p1]
 
     def __str__(self):
         return "triangle: (" + str(edge_of_neighbor(self.n1).p1) + ", " + str(
@@ -200,9 +204,9 @@ def triangulate(points_list, visualization=None):
 
     middle_point = Point((point_max_x.x + point_min_x.x) / 2.0, (point_max_y.y + point_min_y.y) / 2.0, 'b')
 
-    p1 = middle_point + Point(3 * M, 0, 'b')
-    p2 = middle_point + Point(0, 3 * M, 'b')
-    p3 = middle_point + Point(-3 * M, -3 * M, 'b')
+    p1 = middle_point + Point(3 * M + epsilon, 0, 'b')
+    p2 = middle_point + Point(0, 3 * M + epsilon, 'b')
+    p3 = middle_point + Point(-3 * M - epsilon, -3 * M - epsilon, 'b')
 
     search_struct = BruteTriangles([Triangle(
         [Edge(p1, p2), None],
@@ -210,7 +214,7 @@ def triangulate(points_list, visualization=None):
         [Edge(p3, p1), None]
     )])
 
-    # np.random.shuffle(points_list)
+    np.random.shuffle(points_list)
 
     for p in points_list:
         print "\ninserting point: " + str(p)
@@ -341,9 +345,15 @@ def triangulate(points_list, visualization=None):
                 search_struct.legalize_edge(t_rik, e_ik, n_ik)
         for t in search_struct.triangles:
             print t
-    pass
 
+    # remove additional nodes
+    additional_nodes = [p1, p2, p3]
+    search_struct.triangles[:] = [t for t in search_struct.triangles if len([p for p in additional_nodes if p in t.get_points()]) == 0]
+
+    print "\nfinal triangulation:"
+    for t in search_struct.triangles:
+        print t
 
 if __name__ == "__main__":
-    points = [Point(0, 0), Point(2, 0), Point(1, 2), Point(1, 1)]
+    points = [Point(2, 0), Point(0, 0), Point(1, 1), Point(1, 2)]
     triangulate(points)
