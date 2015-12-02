@@ -3,7 +3,7 @@ import numpy as np
 
 from basic.mixins import OperatorMixin
 from basic.orient import orient
-from gui.primitives import Point
+from gui.primitives import Point, Polygon
 from basic.constants import epsilon
 
 __author__ = 'Michał Ciołczyk, Michał Janczykowski'
@@ -68,11 +68,33 @@ class Triangle(object):
         return None
 
     def get_points(self):
-        return [self.n1[0].p1, self.n2[0].p1,self.n3[0].p1]
+        return [self.n1[0].p1, self.n2[0].p1, self.n3[0].p1]
 
     def __str__(self):
         return "triangle: (" + str(edge_of_neighbor(self.n1).p1) + ", " + str(
             edge_of_neighbor(self.n2).p1) + ", " + str(edge_of_neighbor(self.n3).p1) + ")"
+
+    def to_polygon(self):
+        return Polygon(self.get_points(), 'k')
+
+    def draw(self, ax, d):
+        self.to_polygon().draw(ax, d, False)
+
+    def min_x(self):
+        points = self.get_points()
+        return reduce(lambda acc, x: x.x if x.x < acc else acc, points[1:], points[0].x)
+
+    def min_y(self):
+        points = self.get_points()
+        return reduce(lambda acc, x: x.y if x.y < acc else acc, points[1:], points[0].y)
+
+    def max_x(self):
+        points = self.get_points()
+        return reduce(lambda acc, x: x.x if x.x > acc else acc, points[1:], points[0].x)
+
+    def max_y(self):
+        points = self.get_points()
+        return reduce(lambda acc, x: x.y if x.y > acc else acc, points[1:], points[0].y)
 
 
 class Edge(OperatorMixin):
@@ -345,14 +367,35 @@ def triangulate(points_list, visualization=None):
                 search_struct.legalize_edge(t_rik, e_ik, n_ik)
         for t in search_struct.triangles:
             print t
+        if visualization:
+            visualization.clear_figures()
+            visualization.add_all_figures(visualization.points)
+            for f in search_struct.triangles:
+                visualization.add_figure(f)
+            visualization.add_all_figures(search_struct.triangles)
+            visualization.update_figures()
+            visualization.wait(1)
 
     # remove additional nodes
     additional_nodes = [p1, p2, p3]
-    search_struct.triangles[:] = [t for t in search_struct.triangles if len([p for p in additional_nodes if p in t.get_points()]) == 0]
+    search_struct.triangles[:] = [t for t in search_struct.triangles if
+                                  len([p for p in additional_nodes if p in t.get_points()]) == 0]
 
     print "\nfinal triangulation:"
     for t in search_struct.triangles:
         print t
+
+    if visualization:
+            visualization.clear_figures()
+            visualization.add_all_figures(visualization.points)
+            for f in search_struct.triangles:
+                visualization.add_figure(f)
+            visualization.add_all_figures(search_struct.triangles)
+            visualization.update_figures()
+            visualization.wait(1)
+
+    return search_struct.triangles
+
 
 if __name__ == "__main__":
     points = [Point(2, 0), Point(0, 0), Point(1, 1), Point(1, 2)]
