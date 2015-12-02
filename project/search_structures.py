@@ -1,5 +1,6 @@
 # coding=utf-8
 from triangles import *
+from gui.primitives import Point
 
 __author__ = 'Michał Ciołczyk, Michał Janczykowski'
 
@@ -10,39 +11,6 @@ class AbstractTriangles(object):
 
     def find(self, point):
         raise NotImplementedError
-
-    def legalize_edge(self, t1, e, t2):
-        raise NotImplementedError
-
-    def delete(self, triangle):
-        n1 = triangle.n1
-        n2 = triangle.n2
-        n3 = triangle.n3
-        t1 = triangle_of_neighbor(n1)
-        t2 = triangle_of_neighbor(n2)
-        t3 = triangle_of_neighbor(n3)
-        if t1 is not None:
-            t1.set_neighbor(edge_of_neighbor(n1), None)
-        if t2 is not None:
-            t2.set_neighbor(edge_of_neighbor(n2), None)
-        if t3 is not None:
-            t3.set_neighbor(edge_of_neighbor(n3), None)
-        self.triangles.remove(triangle)
-        return n1, n2, n3
-
-    def add(self, triangle):
-        self.triangles.append(triangle)
-
-
-class BruteTriangles(AbstractTriangles):
-    def __init__(self, triangles):
-        super(BruteTriangles, self).__init__(triangles)
-
-    def find(self, point):
-        for triangle in self.triangles:
-            if point in triangle:
-                return triangle
-        return None
 
     def legalize_edge(self, t1, e, t2):
         """Legalizes edge.
@@ -91,10 +59,88 @@ class BruteTriangles(AbstractTriangles):
             if n_jr is not None:
                 n_jr.set_neighbor(Edge(pj, pr), new_t2)
 
-            self.add(new_t1)
-            self.add(new_t2)
+            self.add(new_t1, t1, t2)
+            self.add(new_t2, t1, t2)
             self.legalize_edge(new_t1, new_t1.n2[0], new_t1.n2[1])
             self.legalize_edge(new_t2, new_t2.n2[0], new_t2.n2[1])
+
+    def delete(self, triangle):
+        n1 = triangle.n1
+        n2 = triangle.n2
+        n3 = triangle.n3
+        t1 = triangle_of_neighbor(n1)
+        t2 = triangle_of_neighbor(n2)
+        t3 = triangle_of_neighbor(n3)
+        if t1 is not None:
+            t1.set_neighbor(edge_of_neighbor(n1), None)
+        if t2 is not None:
+            t2.set_neighbor(edge_of_neighbor(n2), None)
+        if t3 is not None:
+            t3.set_neighbor(edge_of_neighbor(n3), None)
+        self.triangles.remove(triangle)
+        return n1, n2, n3
+
+    def add(self, triangle, parent_tr1, parent_tr2=None):
+        self.triangles.append(triangle)
+
+
+class _Node(object):
+    def __init__(self, triangle, children=None):
+        if not children:
+            children = []
+        self.triangle = triangle
+        self.children = children
+
+    def find(self, point):
+        """
+        :type point: Point
+        """
+        if len(self.children) == 0:
+            return self
+
+        for n in self.children:
+            if point in n.triangle:
+                return n.find(point)
+
+        raise StandardError("No way")
+
+    def add(self, child):
+        self.children.append(child)
+
+
+class KirkPatrickTriangles(AbstractTriangles):
+    def __init__(self, triangles):
+        super(KirkPatrickTriangles, self).__init__(triangles)
+        root_triangle = triangles[0]
+        self.root = _Node(root_triangle)
+        root_triangle.node = self.root
+
+    def find(self, point):
+        node = self.root.find(point)
+        return node.triangle
+
+    def add(self, triangle, parent_tr1, parent_tr2=None):
+        super(KirkPatrickTriangles, self).add(triangle, parent_tr1, parent_tr2)
+        t_node = _Node(triangle)
+        triangle.node = t_node
+
+        parent_node1 = parent_tr1.node
+        parent_node1.add(t_node)
+
+        if parent_tr2:
+            parent_node2 = parent_tr2.node
+            parent_node2.add(t_node)
+
+
+class BruteTriangles(AbstractTriangles):
+    def __init__(self, triangles):
+        super(BruteTriangles, self).__init__(triangles)
+
+    def find(self, point):
+        for triangle in self.triangles:
+            if point in triangle:
+                return triangle
+        return None
 
 
 def is_illegal(t, pk):

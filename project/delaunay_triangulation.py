@@ -1,9 +1,12 @@
 # coding=utf-8
+
+import sys
+
 import numpy as np
 
 from gui.primitives import Point
 from basic.constants import epsilon
-from search_structures import BruteTriangles
+from search_structures import KirkPatrickTriangles
 from triangles import *
 
 __author__ = 'Michał Ciołczyk, Michał Janczykowski'
@@ -27,7 +30,7 @@ def triangulate(points_list, visualization=None):
     p2 = middle_point + Point(0, 3 * M + epsilon, 'b')
     p3 = middle_point + Point(-3 * M - epsilon, -3 * M - epsilon, 'b')
 
-    search_struct = BruteTriangles([Triangle(
+    search_struct = KirkPatrickTriangles([Triangle(
         [Edge(p1, p2), None],
         [Edge(p2, p3), None],
         [Edge(p3, p1), None]
@@ -64,7 +67,7 @@ def triangulate(points_list, visualization=None):
                 nt2.set_neighbor(ne2, t2)
             if nt3:
                 nt3.set_neighbor(ne3, t3)
-            [search_struct.add(t) for t in [t1, t2, t3]]
+            [search_struct.add(t, triangle) for t in [t1, t2, t3]]
             # Legalizing edges
             search_struct.legalize_edge(t1, ne1, nt1)
             search_struct.legalize_edge(t2, ne2, nt2)
@@ -125,10 +128,10 @@ def triangulate(points_list, visualization=None):
                 if n_ik:
                     n_ik.set_neighbor(e_ik, t_rik)
                 # Add triangles
-                search_struct.add(t_rli)
-                search_struct.add(t_rjl)
-                search_struct.add(t_rkj)
-                search_struct.add(t_rik)
+                search_struct.add(t_rli, nt)
+                search_struct.add(t_rjl, nt)
+                search_struct.add(t_rkj, triangle)
+                search_struct.add(t_rik, triangle)
                 # Legalize edges:
                 search_struct.legalize_edge(t_rli, e_li, n_li)
                 search_struct.legalize_edge(t_rjl, e_jl, n_jl)
@@ -157,8 +160,8 @@ def triangulate(points_list, visualization=None):
                 if n_ik:
                     n_ik.set_neighbor(e_ik, t_rik)
                 # Add triangles
-                search_struct.add(t_rkj)
-                search_struct.add(t_rik)
+                search_struct.add(t_rkj, triangle)
+                search_struct.add(t_rik, triangle)
                 # Legalize edges:
                 search_struct.legalize_edge(t_rkj, e_kj, n_kj)
                 search_struct.legalize_edge(t_rik, e_ik, n_ik)
@@ -195,5 +198,6 @@ def triangulate(points_list, visualization=None):
 
 
 if __name__ == "__main__":
+    sys.setrecursionlimit(50)
     points = [Point(2, 0), Point(0, 0), Point(1, 1), Point(1, 2)]
     triangulate(points)

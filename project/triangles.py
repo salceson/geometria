@@ -20,6 +20,7 @@ class Triangle(object):
         self.n1 = n1
         self.n2 = n2
         self.n3 = n3
+        self.node = None
 
     def _point_orient(self, point):
         e1 = edge_of_neighbor(self.n1)
