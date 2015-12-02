@@ -15,7 +15,9 @@ __author__ = 'Michał Ciołczyk'
 
 
 class GuiWithCanvasAndToolbar(gtk.Window):
-    def __init__(self, toolBoxWidgets=[], title="GTK Gui Plot", *args, **kwargs):
+    def __init__(self, toolBoxWidgets=None, title="GTK Gui Plot", scaling=True, *args, **kwargs):
+        if not toolBoxWidgets:
+            toolBoxWidgets = []
         super(GuiWithCanvasAndToolbar, self).__init__(*args, **kwargs)
         self.connect("destroy", lambda x: gtk.main_quit())
         self.set_default_size(1100, 600)
@@ -52,6 +54,7 @@ class GuiWithCanvasAndToolbar(gtk.Window):
         self.update_figures()
 
         self.add(table)
+        self.scaling = scaling
 
     def add_figure(self, figure):
         self.figures.append(figure)
@@ -109,7 +112,7 @@ class GuiWithCanvasAndToolbar(gtk.Window):
     def update_figures(self, clear=True, polygon=False):
         if clear:
             self.ax.clear()
-        if len(self.figures) > 1 or (len(self.figures) == 1 and polygon):
+        if len(self.figures) > 3 or (len(self.figures) == 1 and polygon):
             dx = self.x_max - self.x_min
             dy = self.y_max - self.y_min
             dx *= 0.1

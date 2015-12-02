@@ -8,6 +8,7 @@ from gui.primitives import Point
 from gui.gui_with_canvas_and_toolbar import GuiWithCanvasAndToolbar
 from project.algorithm_results import AlgorithmResultsGUI
 from project.delaunay_triangulation import triangulate
+from project.generate_gui import GenerateGui
 
 __author__ = 'Michał Ciołczyk'
 
@@ -18,9 +19,21 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         infoLabel = gtk.Label("Draw points by pressing\nleft mouse button.")
         clearButton = gtk.Button("Clear")
         clearButton.connect("clicked", self.clearClicked)
+        generateButton = gtk.Button("Generate data...")
+        generateButton.connect("clicked", self.generateClicked)
+        methodLabel = gtk.Label("Method:")
+        methodRadio1 = gtk.RadioButton(None, "Kirkpatrick")
+        methodRadio1.connect("toggled", self.methodChanged, "kirkpatrick")
+        methodRadio2 = gtk.RadioButton(methodRadio1, "Brute")
+        methodRadio2.connect("toggled", self.methodChanged, "brute")
+        self.method = "kirkpatrick"
         animatedCheckBox = gtk.CheckButton("Animated")
         animatedCheckBox.connect("clicked", self.animatedClicked)
         self.animated = False
+        trianglesCheckBox = gtk.CheckButton("Draw result triangles")
+        trianglesCheckBox.set_active(True)
+        trianglesCheckBox.connect("clicked", self.trianglesClicked)
+        self.triangles = True
         algoButton = gtk.Button("Triangulate")
         algoButton.connect("clicked", self.algoClicked)
         openButton = gtk.Button("Load points from file...")
@@ -28,9 +41,10 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
         saveButton = gtk.Button("Save points to file...")
         saveButton.connect("clicked", self.saveButtonClicked)
 
-        toolBox = [infoLabel, clearButton, openButton, saveButton, animatedCheckBox, algoButton]
+        toolBox = [infoLabel, clearButton, openButton, saveButton, generateButton, methodLabel,
+                   methodRadio1, methodRadio2, animatedCheckBox, trianglesCheckBox, algoButton]
 
-        super(MainWindowGui, self).__init__(toolBox, "Project - Delaunay triangulation", *args, **kwargs)
+        super(MainWindowGui, self).__init__(toolBox, "Project - Delaunay triangulation", False, *args, **kwargs)
 
         self.points = []
 
@@ -40,14 +54,16 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
 
     def algoClicked(self, widget, data=None):
         try:
-            self.clear_figures()
-            self.add_all_figures(self.points)
-            self.update_figures()
+            if self.triangles:
+                self.clear_figures()
+                self.add_all_figures(self.points)
+                self.update_figures()
             time_start = time.time()
-            triangles = triangulate(self.points, self if self.animated else None)
+            triangles = triangulate(self.points, visualization=self if self.animated and self.triangles else None)
             time_end = time.time()
-            self.add_all_figures(triangles)
-            self.update_figures()
+            if self.triangles:
+                self.add_all_figures(triangles)
+                self.update_figures()
             AlgorithmResultsGUI(triangles, time_end - time_start)
         except ValueError as e:
             print e
@@ -103,6 +119,17 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
 
     def animatedClicked(self, widget, data=None):
         self.animated = not self.animated
+
+    def trianglesClicked(self, widget, data=None):
+        self.triangles = not self.triangles
+
+    def generateClicked(self, widget, data=None):
+        gui = GenerateGui(self)
+        gui.show_all()
+
+    def methodChanged(self, widget, data):
+        if widget.get_active():
+            self.method = str(data)
 
     def handle_click(self, event):
         button = event.button

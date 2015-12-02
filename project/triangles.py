@@ -16,11 +16,12 @@ def triangle_of_neighbor(neighbor):
 
 
 class Triangle(object):
-    def __init__(self, n1, n2, n3):
+    def __init__(self, n1, n2, n3, color='k'):
         self.n1 = n1
         self.n2 = n2
         self.n3 = n3
         self.node = None
+        self.color = color
 
     def _point_orient(self, point):
         e1 = edge_of_neighbor(self.n1)
@@ -74,7 +75,7 @@ class Triangle(object):
             edge_of_neighbor(self.n2).p1) + ", " + str(edge_of_neighbor(self.n3).p1) + ")"
 
     def to_polygon(self):
-        return Polygon(self.get_points(), 'k')
+        return Polygon(self.get_points(), self.color)
 
     def draw(self, ax, d):
         self.to_polygon().draw(ax, d, False)
