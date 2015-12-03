@@ -59,7 +59,8 @@ class MainWindowGui(GuiWithCanvasAndToolbar):
                 self.add_all_figures(self.points)
                 self.update_figures()
             time_start = time.time()
-            triangles = triangulate(self.points, visualization=self if self.animated and self.triangles else None)
+            triangles = triangulate(self.points, visualization=self if self.animated and self.triangles else None,
+                                    search_struct_name=self.method)
             time_end = time.time()
             if self.triangles:
                 self.add_all_figures(triangles)
