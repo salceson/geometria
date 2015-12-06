@@ -6,6 +6,8 @@ Geometria Obliczeniowa
 * Laboratorium 3 - przecięcia odcinków metodą zamiatania
 * Laboratorium 4 - klasyfikacja punktów w wielokącie, sprawdzenie,
  czy wielokąt jest y-monotoniczny, triangulacja wielokąta y-monotonicznego
+* Projekt - iteracyjna triangulacja Delaunay'a wraz z porównaniem dwóch algorytmów
+ znajdowania trójkąta, w który wpada kolejny punkt.
 
 # SimGUI
 
